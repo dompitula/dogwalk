@@ -7,6 +7,9 @@
 # and pnpm's package store. The Node.js, npm, pnpm or Corepack installed on
 # this computer are not used or changed. Delete .venv/ to remove all of it.
 #
+# Runs on Linux, and on Windows in Git Bash. In PowerShell or Command Prompt
+# use deploy.cmd, which starts this script with Git Bash.
+#
 # Usage: bash deploy.sh [--port PORT]
 
 set -euo pipefail
@@ -14,6 +17,7 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage: bash deploy.sh [--port PORT]
+       .\deploy.cmd [--port PORT]   (Windows: PowerShell or Command Prompt)
 
 Installs Node.js and pnpm into .venv/, installs the app's dependencies,
 creates .env if it does not exist yet, builds the app and starts it in
@@ -47,9 +51,8 @@ cd "$root"
 
 case "$(uname -s)" in
   Linux*) os=linux archive=tar.gz ;;
-  Darwin*) os=darwin archive=tar.gz ;;
-  MINGW* | MSYS* | CYGWIN*) os=win archive=zip ;;
-  *) die "unsupported system: $(uname -s). Use Linux, macOS, or Git Bash on Windows." ;;
+  MINGW* | MSYS*) os=win archive=zip ;; # Git Bash on Windows
+  *) die "unsupported system: $(uname -s). deploy.sh runs on Linux, or on Windows in Git Bash." ;;
 esac
 case "$(uname -m)" in
   x86_64 | amd64) arch=x64 ;;
@@ -57,17 +60,24 @@ case "$(uname -m)" in
   *) die "unsupported processor: $(uname -m)" ;;
 esac
 
+# WSL reports Linux, but on a Windows folder (/mnt/c/...) it would put Linux
+# builds into the Windows project. This usually means "bash deploy.sh" was typed
+# in PowerShell or Command Prompt, where bash starts WSL instead of Git Bash.
+if [ "$os" = linux ] && grep -qi microsoft /proc/version 2>/dev/null; then
+  case "$root" in
+    /mnt/*) die "this Windows folder was opened through WSL. On Windows, run .\\deploy.cmd in PowerShell or Command Prompt, or bash deploy.sh in Git Bash." ;;
+  esac
+fi
+
 # Paths handed to Node-based tools must be native Windows paths under Git Bash.
 native_path() { if [ "$os" = win ]; then cygpath -w "$1"; else printf '%s\n' "$1"; fi; }
 
-sha256_of() {
-  if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1"; else shasum -a 256 "$1"; fi | awk '{ print $1 }'
-}
+sha256_of() { sha256sum "$1" | awk '{ print $1 }'; }
 
 need() { command -v "$1" >/dev/null 2>&1 || die "'$1' is required but was not found."; }
 need curl
+need sha256sum
 if [ "$os" = win ]; then need unzip; need cygpath; else need tar; fi
-command -v sha256sum >/dev/null 2>&1 || need shasum
 
 # --- .venv --------------------------------------------------------------------
 
@@ -179,7 +189,7 @@ process.on('exit', (code) => {
 })
 
 const config = await configPromise
-config.typescript.autoGenerate = false // don't rewrite src/payload-types.ts during a deploy
+config.typescript.autoGenerate = false // the build step generates the types; skip Payload's extra background run
 await getPayload({ config })
 finished = true
 console.log('Database is ready.')

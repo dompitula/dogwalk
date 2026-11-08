@@ -126,6 +126,7 @@ src/
   payload.config.ts  Payload configuration (SQLite database, collections)
 scripts/create-env.mjs  creates .env
 deploy.sh               one-step production deploy (see README.md)
+deploy.cmd              runs deploy.sh with Git Bash from PowerShell or Command Prompt
 ```
 
 Other commands: `pnpm generate:types` regenerates `src/payload-types.ts`, `pnpm generate:importmap` regenerates the CMS import map, `pnpm format` formats the code.

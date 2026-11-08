@@ -12,19 +12,21 @@ One Next.js app with a public booking site, a staff dashboard and a content mana
 
 ### Requirements
 
-- Linux, macOS, or Windows with **Git Bash** (installed together with [Git for Windows](https://git-scm.com/download/win))
-- `curl`, plus `tar` on Linux and macOS or `unzip` on Windows. macOS, most Linux systems and Git Bash already include them.
+- **Windows** with [Git for Windows](https://git-scm.com/download/win) installed (it includes Git Bash, which the script runs in), or **Linux** (x64 or arm64)
+- On Linux: `curl` and `tar`, which most distributions already include. On Windows, Git Bash brings everything the script needs.
 - An internet connection
 
 ### Run it
 
-Open a terminal in this folder (the one with `package.json`) and run:
+Open a terminal in this folder (the one with `package.json`) and run the command for your terminal:
 
-```bash
-bash deploy.sh
-```
+| System | Terminal | Command |
+| --- | --- | --- |
+| Windows | PowerShell (also the VS Code terminal) or Command Prompt | `.\deploy.cmd` |
+| Windows | Git Bash | `bash deploy.sh` |
+| Linux | any | `bash deploy.sh` |
 
-On Windows, open the folder in File Explorer, right-click an empty spot, choose **Open Git Bash here**, and run the command there.
+On Windows, don't type `bash deploy.sh` in PowerShell or Command Prompt: there, `bash` starts WSL instead of Git Bash. `deploy.cmd` finds Git Bash and runs `deploy.sh` with it.
 
 The first run takes a few minutes. The app is up when the terminal shows `✓ Ready`:
 
@@ -36,13 +38,13 @@ The first run takes a few minutes. The app is up when the terminal shows `✓ Re
 
 On the first visit, open http://localhost:3000/admin and fill in the **create first user** form. That account signs you in to both the dashboard and the content manager.
 
-Keep the terminal open while the app is in use, and stop the app with `Ctrl + C`. To start it again, or to deploy a new version of the code, run `bash deploy.sh` again. Steps that are already done are skipped, and your data is kept.
+Keep the terminal open while the app is in use, and stop the app with `Ctrl + C` (with `deploy.cmd`, then answer `Y` to "Terminate batch job?"). To start it again, or to deploy a new version of the code, run the same command again. Steps that are already done are skipped, and your data is kept.
 
 ### Options
 
 | Option | What it does |
 | --- | --- |
-| `--port PORT` | Serves the app on another port, for example `bash deploy.sh --port 8080`. The default is 3000, or the `PORT` environment variable if it is set. |
+| `--port PORT` | Serves the app on another port, for example `.\deploy.cmd --port 8080` or `bash deploy.sh --port 8080`. The default is 3000, or the `PORT` environment variable if it is set. |
 | `-h`, `--help` | Shows the usage and exits. |
 
 ### What it does
@@ -54,22 +56,24 @@ Keep the terminal open while the app is in use, and stop the app with `Ctrl + C`
 | Dependencies | Runs `pnpm install` with pnpm's package store in `.venv/pnpm-store`. If `pnpm-lock.yaml` no longer matches `package.json`, pnpm updates it; commit the updated file. |
 | Settings | Creates `.env` with a random `PAYLOAD_SECRET` if it does not exist yet. An existing `.env` is never changed. |
 | Database | Creates or updates the tables in `shelter.db`, and fills an empty database with sample data (1 shelter, 4 dogs, 13 walks, 3 demo bookings). If a code change would delete data, Payload asks first; answering no stops the deploy. |
-| Build | Runs `pnpm run build`, the production build. |
+| Build | Runs `pnpm run build`, the production build. Payload's build also regenerates `src/payload-types.ts` from the collections; commit that file if it changed. |
 | Start | Runs `pnpm run start` on the chosen port. |
 
 ### Good to know
 
 - **Your data** is in `shelter.db` (the database) and the `media` folder (uploaded photos). Back up these two and `.env`. Running `deploy.sh` again keeps all three.
 - **Public address:** if people reach the app through a domain, set `NEXT_PUBLIC_SITE_URL` in `.env` (for example `https://walks.example.org`) and run `deploy.sh` again. The address is built into the pages' metadata.
-- **Start over with a clean database:** stop the app, delete `shelter.db` and the `media` folder, and run `bash deploy.sh` again. Then create the staff account again.
+- **Start over with a clean database:** stop the app, delete `shelter.db` and the `media` folder, and run the deploy command again. Then create the staff account again.
 - **Remove everything deploy.sh installed:** delete the `.venv` and `node_modules` folders. `.venv` is never committed; it carries its own `.gitignore`.
 
 ### Troubleshooting
 
 | Problem | Fix |
 | --- | --- |
-| `port 3000 is already in use` | Another program uses that port. Stop it, or use another port: `bash deploy.sh --port 3001`. |
-| On Windows, `bash` opens WSL, or says no Linux distribution is installed | You ran it from PowerShell or Command Prompt, where `bash` can mean WSL. Run it from Git Bash instead (see [Run it](#run-it)). |
+| `port 3000 is already in use` | Another program uses that port. Stop it, or add another port to the command, for example `--port 3001`. |
+| `WSL ... ERROR: CreateProcessCommon ... execvpe(/bin/bash) failed`, or `bash` opens WSL or says no Linux distribution is installed | You typed `bash deploy.sh` in PowerShell or Command Prompt, where `bash` starts WSL. Run `.\deploy.cmd` instead (see [Run it](#run-it)). |
+| `deploy.cmd: Git Bash was not found` | Install [Git for Windows](https://git-scm.com/download/win), open a new terminal and run `.\deploy.cmd` again. |
+| `this Windows folder was opened through WSL` | Same cause as the WSL error above: run `.\deploy.cmd` in PowerShell or Command Prompt, or `bash deploy.sh` in Git Bash. |
 | `$'\r': command not found` | `deploy.sh` has Windows line endings. Fix the file once with `sed -i 's/\r$//' deploy.sh`. `.gitattributes` keeps it correct in future checkouts. |
 | `could not download Node.js` | Check the internet connection (and proxy, if you use one) and run `deploy.sh` again. |
-| Anything else | Delete `.venv` and `node_modules` and run `bash deploy.sh` again for a clean install. For app errors, see the troubleshooting section of [MANUAL_INSTALL.md](MANUAL_INSTALL.md#5-troubleshooting). |
+| Anything else | Delete `.venv` and `node_modules` and run the deploy command again for a clean install. For app errors, see the troubleshooting section of [MANUAL_INSTALL.md](MANUAL_INSTALL.md#5-troubleshooting). |

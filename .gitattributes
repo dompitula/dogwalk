@@ -1,3 +1,5 @@
 # Shell scripts must keep LF line endings: with CRLF (Git's default checkout
 # on Windows), bash fails with "$'\r': command not found".
 *.sh text eol=lf
+# Batch files need CRLF line endings to be parsed reliably by cmd.exe.
+*.cmd text eol=crlf
