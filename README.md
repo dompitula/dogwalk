@@ -45,6 +45,9 @@ Keep the terminal open while the app is in use, and stop the app with `Ctrl + C`
 | Option | What it does |
 | --- | --- |
 | `--port PORT` | Serves the app on another port, for example `.\deploy.cmd --port 8080` or `bash deploy.sh --port 8080`. The default is 3000, or the `PORT` environment variable if it is set. |
+| `--clean` | Starts without the sample data, for example `.\deploy.cmd --clean`. Only an empty database is affected: a database that already has data is kept as it is, so to drop the sample data, run `--teardown` first. With an empty database, add a shelter first and then the dogs, in the content manager. |
+| `--teardown` | Deletes the app's data and everything `deploy.sh` installed, after asking. The app is not started. See [Remove the app and its data](#remove-the-app-and-its-data). |
+| `--yes` | With `--teardown`: deletes without asking. |
 | `-h`, `--help` | Shows the usage and exits. |
 
 ### What it does
@@ -55,16 +58,35 @@ Keep the terminal open while the app is in use, and stop the app with `Ctrl + C`
 | pnpm | Installs the pnpm version pinned in `package.json` (currently 10.34.3) into `.venv/node` with npm. Corepack is not used. Skipped when that version is already there. |
 | Dependencies | Runs `pnpm install` with pnpm's package store in `.venv/pnpm-store`. If `pnpm-lock.yaml` no longer matches `package.json`, pnpm updates it; commit the updated file. |
 | Settings | Creates `.env` with a random `PAYLOAD_SECRET` if it does not exist yet. An existing `.env` is never changed. |
-| Database | Creates or updates the tables in `shelter.db`, and fills an empty database with sample data (1 shelter, 4 dogs, 13 walks, 3 demo bookings). If a code change would delete data, Payload asks first; answering no stops the deploy. |
+| Database | Creates or updates the tables in `shelter.db`, and fills an empty database with sample data (1 shelter, 3 dogs, 10 walks, 3 demo bookings), unless you add `--clean`. If a code change would delete data, Payload asks first; answering no stops the deploy. |
 | Build | Runs `pnpm run build`, the production build. Payload's build also regenerates `src/payload-types.ts` from the collections; commit that file if it changed. |
 | Start | Runs `pnpm run start` on the chosen port. |
+
+### Remove the app and its data
+
+Stop the app (`Ctrl + C`), then run the command for your terminal:
+
+| Terminal | Command |
+| --- | --- |
+| PowerShell or Command Prompt | `.\deploy.cmd --teardown` |
+| Git Bash, or Linux | `bash deploy.sh --teardown` |
+
+It lists what it will delete and waits for you to type `yes`. Only what exists is listed:
+
+| Deleted | What it is |
+| --- | --- |
+| `shelter.db` | The database: dogs, walks, bookings and staff accounts. If `DATABASE_URL` in `.env` names another file, that file. |
+| `media` | Uploaded photos |
+| `.env` | Settings, including `PAYLOAD_SECRET` |
+| `.venv`, `node_modules`, `.next` | Node.js, pnpm, the dependencies and the build |
+
+This can't be undone, so back up `shelter.db`, `media` and `.env` first if you might need them. The code is not touched. Afterwards, run the deploy command again for a fresh start, with `--clean` if you don't want the sample data. Or delete the folder to remove the app completely.
 
 ### Good to know
 
 - **Your data** is in `shelter.db` (the database) and the `media` folder (uploaded photos). Back up these two and `.env`. Running `deploy.sh` again keeps all three.
+- **Nothing you create is committed.** `.gitignore` keeps out the database (under any name or folder, including backup copies such as `shelter.db.bak`), `media`, `.env`, `.venv`, `node_modules` and `.next`. The only data in the repository is the sample data in `src/seed`.
 - **Public address:** if people reach the app through a domain, set `NEXT_PUBLIC_SITE_URL` in `.env` (for example `https://walks.example.org`) and run `deploy.sh` again. The address is built into the pages' metadata.
-- **Start over with a clean database:** stop the app, delete `shelter.db` and the `media` folder, and run the deploy command again. Then create the staff account again.
-- **Remove everything deploy.sh installed:** delete the `.venv` and `node_modules` folders. `.venv` is never committed; it carries its own `.gitignore`.
 
 ### Troubleshooting
 
@@ -75,5 +97,6 @@ Keep the terminal open while the app is in use, and stop the app with `Ctrl + C`
 | `deploy.cmd: Git Bash was not found` | Install [Git for Windows](https://git-scm.com/download/win), open a new terminal and run `.\deploy.cmd` again. |
 | `this Windows folder was opened through WSL` | Same cause as the WSL error above: run `.\deploy.cmd` in PowerShell or Command Prompt, or `bash deploy.sh` in Git Bash. |
 | `$'\r': command not found` | `deploy.sh` has Windows line endings. Fix the file once with `sed -i 's/\r$//' deploy.sh`. `.gitattributes` keeps it correct in future checkouts. |
+| `could not delete …` or `ShelterWalk is still running` during `--teardown` | The app is still running. Stop it with `Ctrl + C` in its terminal and run the teardown again; it carries on with what is left. |
 | `could not download Node.js` | Check the internet connection (and proxy, if you use one) and run `deploy.sh` again. |
 | Anything else | Delete `.venv` and `node_modules` and run the deploy command again for a clean install. For app errors, see the troubleshooting section of [MANUAL_INSTALL.md](MANUAL_INSTALL.md#5-troubleshooting). |

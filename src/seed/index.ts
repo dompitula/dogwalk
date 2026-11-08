@@ -9,14 +9,19 @@ import type { BookingStatusValue, WalkRouteValue } from '../lib/walks'
  *
  * Runs from `onInit` in payload.config.ts. It only does something when the database
  * has no staff accounts and no dogs yet, so it never touches data you created.
- * To start over, stop the server and delete `shelter.db` and the `media` folder.
+ * `SAMPLE_DATA=false` (set by `deploy.sh --clean`, or in .env) leaves an empty database empty.
+ * To start over, stop the server and run `deploy.sh --teardown`, or delete `shelter.db`
+ * and the `media` folder.
  */
+
+export const sampleDataEnabled = () =>
+  !/^(false|0|no|off)$/i.test(process.env.SAMPLE_DATA?.trim() ?? '')
 
 // `pnpm dev` runs from the project root, so the bundled placeholder photos live here.
 const PLACEHOLDER_DIR = path.resolve(process.cwd(), 'src', 'seed', 'images')
 
 type SeedDog = {
-  key: 'milo' | 'luna' | 'charlie' | 'cooper'
+  key: 'milo' | 'luna' | 'cooper'
   name: string
   breed: string
   ageLabel: string
@@ -60,19 +65,6 @@ const DOGS: SeedDog[] = [
     photoURL: unsplash('photo-1588170261280-c1872232a6ab'),
   },
   {
-    key: 'charlie',
-    name: 'Charlie',
-    breed: 'Cocker Spaniel',
-    ageLabel: '5 years',
-    size: 'medium',
-    energy: 'easygoing',
-    kennel: 'A-08',
-    temperament: 'Calm & gentle',
-    bio: 'A calm, soft-eared spaniel who walks nicely on the lead and enjoys a good sniff around the garden.',
-    traits: ['Calm', 'Great for beginners', 'Gentle'],
-    photoURL: unsplash('photo-1680795082050-28f6495af899'),
-  },
-  {
     key: 'cooper',
     name: 'Cooper',
     breed: 'Border Collie',
@@ -114,15 +106,12 @@ const SLOTS: SeedSlot[] = [
     route: 'north-trail',
     handlingNotes: 'Use the front-clip harness. Pulls towards bikes.',
   },
-  { dog: 'charlie', dayOffset: 2, time: '10:00', durationMinutes: 45, route: 'quiet-garden' },
   { dog: 'cooper', dayOffset: 2, time: '14:30', durationMinutes: 45, route: 'enrichment-yard' },
   { dog: 'milo', dayOffset: 3, time: '09:30', durationMinutes: 60, route: 'north-trail' },
   { dog: 'luna', dayOffset: 3, time: '13:00', durationMinutes: 30, route: 'quiet-garden' },
-  { dog: 'charlie', dayOffset: 4, time: '10:30', durationMinutes: 45, route: 'riverside-loop' },
   { dog: 'milo', dayOffset: 4, time: '16:00', durationMinutes: 45, route: 'riverside-loop' },
   { dog: 'cooper', dayOffset: 5, time: '09:00', durationMinutes: 60, route: 'north-trail' },
   { dog: 'luna', dayOffset: 5, time: '11:00', durationMinutes: 30, route: 'quiet-garden' },
-  { dog: 'charlie', dayOffset: 6, time: '10:00', durationMinutes: 45, route: 'quiet-garden' },
   { dog: 'milo', dayOffset: 6, time: '12:00', durationMinutes: 45, route: 'riverside-loop' },
 ]
 
@@ -154,7 +143,7 @@ const BOOKINGS: {
     status: 'pending',
   },
   {
-    slotIndex: 4,
+    slotIndex: 3,
     fullName: 'Noah Bennett',
     email: 'noah.bennett@example.com',
     phone: '555-0103',
@@ -205,6 +194,11 @@ async function runSeed(payload: Payload) {
     payload.find({ collection: 'dogs', depth: 0, limit: 1, overrideAccess: true }),
   ])
   if (admins.docs.length > 0 || dogs.docs.length > 0) return
+
+  if (!sampleDataEnabled()) {
+    payload.logger.info('Seed: empty database, sample data not added (SAMPLE_DATA=false).')
+    return
+  }
 
   payload.logger.info('Seed: empty database found, adding sample shelter, dogs and walks…')
 

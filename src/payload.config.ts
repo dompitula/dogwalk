@@ -61,7 +61,8 @@ export default buildConfig({
       url: process.env.DATABASE_URL || 'file:./shelter.db',
     },
   }),
-  // Fills an empty database with a sample shelter, dogs, walk times and two demo bookings.
+  // Fills an empty database with a sample shelter, dogs, walk times and three demo bookings,
+  // unless SAMPLE_DATA=false (deploy.sh --clean). See src/seed/index.ts.
   onInit: async (payload) => {
     await seedStarterData(payload)
   },

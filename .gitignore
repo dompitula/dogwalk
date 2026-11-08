@@ -13,6 +13,16 @@ logs/
 *.log
 .tmp-*
 
-# Local data created by `pnpm dev`: SQLite database and uploaded files
-/shelter.db*
+# App data is never committed: only the sample data in src/seed is.
+# Databases (shelter.db by default, or the file named by DATABASE_URL), their
+# temporary files and backup copies, wherever they are kept
+*.db
+*.db-*
+*.db.*
+*.sqlite*
+# Uploaded files (the Media collection)
 /media/
+# Settings and secrets: .env* above (.env.example is the empty template)
+
+# Node.js, pnpm and the package store installed by deploy.sh
+/.venv/
