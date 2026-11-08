@@ -1,0 +1,18 @@
+node_modules/
+.next/
+out/
+dist/
+build/
+.cache/
+.env*
+!.env.example
+next-env.d.ts
+*.tsbuildinfo
+*-debug.log*
+logs/
+*.log
+.tmp-*
+
+# Local data created by `pnpm dev`: SQLite database and uploaded files
+/shelter.db*
+/media/
