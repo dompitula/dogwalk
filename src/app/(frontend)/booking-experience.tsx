@@ -32,7 +32,7 @@ function Icon({
   name,
   className = 'h-5 w-5',
 }: {
-  name: 'arrow' | 'calendar' | 'check' | 'clock' | 'heart' | 'map' | 'paw' | 'spark'
+  name: 'arrow' | 'calendar' | 'check' | 'clock' | 'map' | 'paw' | 'spark'
   className?: string
 }) {
   const paths = {
@@ -44,9 +44,6 @@ function Icon({
         <circle cx="12" cy="12" r="9" />
         <path d="M12 7v5l3 2" />
       </>
-    ),
-    heart: (
-      <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
     ),
     map: (
       <>
@@ -210,17 +207,10 @@ export function BookingExperience({ walks }: { walks: WalkOption[] }) {
                   </span>
                 </div>
                 <div className="p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <h3 className="font-serif text-3xl text-[#173f2b]">{walk.dog.name}</h3>
-                      <p className="mt-1 text-sm font-medium text-[#738278]">
-                        {walk.dog.ageLabel} · {walk.dog.breed}
-                      </p>
-                    </div>
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#fff0ea] text-[#db5d3f]">
-                      <Icon name="heart" className="h-4.5 w-4.5" />
-                    </span>
-                  </div>
+                  <h3 className="font-serif text-3xl text-[#173f2b]">{walk.dog.name}</h3>
+                  <p className="mt-1 text-sm font-medium text-[#738278]">
+                    {walk.dog.ageLabel} · {walk.dog.breed}
+                  </p>
                   <p className="mt-4 line-clamp-2 min-h-12 text-sm leading-6 text-[#576b5e]">
                     {walk.dog.bio}
                   </p>

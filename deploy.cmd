@@ -1,7 +1,7 @@
 @echo off
 rem deploy.cmd: runs deploy.sh with Git Bash, for PowerShell and Command Prompt.
 rem Typing "bash deploy.sh" there starts WSL instead of Git Bash.
-rem Usage: deploy.cmd [--port PORT]
+rem Usage: deploy.cmd [options]   (the options of deploy.sh; see deploy.cmd --help)
 setlocal
 
 rem Git Bash sits next to git.exe: <Git>\cmd\git.exe -> <Git>\bin\bash.exe

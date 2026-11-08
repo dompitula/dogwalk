@@ -77,13 +77,15 @@ Walk statuses in the dashboard:
 
 On the very first start (a database with no staff accounts and no dogs) the app adds:
 
-- 1 shelter, 4 dogs (Milo, Luna, Charlie, Cooper),
-- 13 walks spread over the next 6 days,
+- 1 shelter, 3 dogs (Milo, Luna, Cooper),
+- 10 walks spread over the next 6 days,
 - 3 demo bookings by made-up people (`@example.com` addresses).
 
 Dog photos are downloaded from Unsplash; without internet the app uses the "Photo coming soon" placeholders in `src/seed/images`. You can edit or delete all of this in the dashboard or the content manager. Dogs, photos and shelters are added in the content manager (**/admin → Dogs**).
 
-**To start over with a clean database:** stop the app (`Ctrl + C`), delete the `shelter.db` file and the `media` folder in this folder, then run `pnpm dev` again. You will need to create the staff account again (step 2 above).
+**To start without the sample data**, add `SAMPLE_DATA=false` to `.env` before the first start (`deploy.sh --clean` does the same). It only affects an empty database: existing data is never removed. With an empty database, add a shelter first and then the dogs, in the content manager.
+
+**To start over with a clean database:** stop the app (`Ctrl + C`), delete the `shelter.db` file and the `media` folder in this folder, then run `pnpm dev` again. You will need to create the staff account again (step 2 above). `bash deploy.sh --teardown` does this for you, and also deletes `.env`, `.venv`, `node_modules` and `.next` (see [README.md](README.md#remove-the-app-and-its-data)). None of this data is ever committed: `.gitignore` keeps it out.
 
 ## 5. Troubleshooting
 
@@ -125,7 +127,7 @@ src/
   seed/              sample data added to an empty database
   payload.config.ts  Payload configuration (SQLite database, collections)
 scripts/create-env.mjs  creates .env
-deploy.sh               one-step production deploy (see README.md)
+deploy.sh               one-step production deploy, and --teardown (see README.md)
 deploy.cmd              runs deploy.sh with Git Bash from PowerShell or Command Prompt
 ```
 
