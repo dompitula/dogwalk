@@ -22,7 +22,7 @@ Open a terminal in this folder (the one with `package.json`) and run the command
 
 | System | Terminal | Command |
 | --- | --- | --- |
-| Windows | PowerShell (also the VS Code terminal) or Command Prompt | `.\deploy.cmd` |
+| Windows | PowerShell or Command Prompt | `.\deploy.cmd` |
 | Windows | Git Bash | `bash deploy.sh` |
 | Linux | any | `bash deploy.sh` |
 
