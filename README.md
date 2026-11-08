@@ -36,7 +36,7 @@ The first run takes a few minutes. The app is up when the terminal shows `✓ Re
 | Staff dashboard | http://localhost:3000/dashboard | Shelter staff: schedule walks, confirm bookings, track walks |
 | Content manager | http://localhost:3000/admin | Shelter staff: dogs, photos, shelters, walks, bookings, staff accounts |
 
-On the first visit, open http://localhost:3000/admin and fill in the **create first user** form. That account signs you in to both the dashboard and the content manager.
+On the first visit, open http://localhost:3000/admin and fill in the **create first user** form. That account signs you in to both the dashboard and the content manager. To get from the content manager to the dashboard, use **← Staff dashboard** at the top of its sidebar.
 
 Keep the terminal open while the app is in use, and stop the app with `Ctrl + C` (with `deploy.cmd`, then answer `Y` to "Terminate batch job?"). To start it again, or to deploy a new version of the code, run the same command again. Steps that are already done are skipped, and your data is kept.
 

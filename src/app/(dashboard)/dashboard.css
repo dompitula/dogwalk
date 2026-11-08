@@ -31,6 +31,22 @@
   button {
     cursor: pointer;
   }
+
+  /* Keyboard focus ring: shown for Tab navigation, not for mouse clicks. */
+  :focus-visible {
+    outline: 2px solid #24614d;
+    outline-offset: 2px;
+  }
+
+  /* The sidebar is dark green, so its ring is light. */
+  .sidebar :focus-visible {
+    outline-color: #ffcf94;
+  }
+
+  /* Dialog panels only receive focus as a fallback; the ring would outline the whole panel. */
+  [tabindex='-1']:focus-visible {
+    outline: none;
+  }
 }
 
 @layer components {
@@ -1638,6 +1654,14 @@
     display: inline-block;
   }
 
+  .details-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 9px;
+    padding: 0 28px 26px;
+  }
+
   .details-list a,
   .walker-head p a {
     color: inherit;
@@ -1781,6 +1805,15 @@
 
   .details-list > div.full {
     grid-column: 1;
+  }
+
+  .details-actions {
+    padding: 0 20px 20px;
+  }
+
+  .details-actions > a {
+    flex: 1 1 100%;
+    justify-content: center;
   }
 
   .settings-list > .settings-row {

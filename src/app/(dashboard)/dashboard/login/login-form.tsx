@@ -52,7 +52,7 @@ export function LoginForm({ hasStaffAccount }: { hasStaffAccount: boolean }) {
       } | null
       setError(body?.errors?.[0]?.message || 'The email or password is incorrect.')
     } catch {
-      setError('Could not reach the server. Check that the dev server (pnpm dev) is still running.')
+      setError('Could not reach the server. Check your connection and try again.')
     }
     setPending(false)
   }

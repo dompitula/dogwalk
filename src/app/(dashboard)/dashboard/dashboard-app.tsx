@@ -13,6 +13,7 @@ import {
   routeLabel,
   statusClass,
 } from '@/lib/walks'
+import { useModalDialog } from '@/lib/use-modal-dialog'
 import { createWalk, removeWalk, setWalkStatus } from './actions'
 import type { ActionResult, DashboardData, DashboardDog, DashboardWalk } from './types'
 
@@ -194,6 +195,10 @@ const initialsOf = (value: string) =>
 
 const bySchedule = (a: WalkView, b: WalkView) => a.start.getTime() - b.start.getTime()
 
+/** A page in the content manager (/admin): a collection's list, its create form, or one document. */
+const adminURL = (collection: 'dogs' | 'walk-slots' | 'bookings', id?: string) =>
+  `/admin/collections/${collection}${id ? `/${id}` : ''}`
+
 export function DashboardApp({ data }: { data: DashboardData }) {
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
@@ -312,6 +317,11 @@ export function DashboardApp({ data }: { data: DashboardData }) {
   }, [walks])
 
   const detailsWalk = walks.find((walk) => walk.id === detailsWalkId) ?? null
+
+  const walkDialogRef = useModalDialog<HTMLDivElement>(modalOpen, () => setModalOpen(false))
+  const detailsDialogRef = useModalDialog<HTMLDivElement>(detailsWalk !== null, () =>
+    setDetailsWalkId(null),
+  )
 
   if (!mounted) {
     return (
@@ -827,7 +837,7 @@ export function DashboardApp({ data }: { data: DashboardData }) {
                 </span>
                 <h3>No dogs yet</h3>
                 <p>Add dogs, with a photo, in the content manager. They will show up here.</p>
-                <a className="text-button" href="/admin">
+                <a className="text-button" href={adminURL('dogs', 'create')}>
                   Open the content manager <Icon name="external" size={15} />
                 </a>
               </div>
@@ -880,7 +890,7 @@ export function DashboardApp({ data }: { data: DashboardData }) {
                           <Icon name="plus" size={16} /> Schedule a walk
                         </button>
                       ) : (
-                        <a className="profile-action" href="/admin">
+                        <a className="profile-action" href={adminURL('dogs', dog.id)}>
                           Edit in content manager <Icon name="external" size={14} />
                         </a>
                       )}
@@ -1029,9 +1039,10 @@ export function DashboardApp({ data }: { data: DashboardData }) {
           <button
             className="modal-backdrop"
             aria-label="Close walk dialog"
+            tabIndex={-1}
             onClick={() => setModalOpen(false)}
           />
-          <div className="booking-modal">
+          <div className="booking-modal" ref={walkDialogRef} tabIndex={-1}>
             <div className="modal-heading">
               <div>
                 <p className="eyebrow">Shelter enrichment</p>
@@ -1046,7 +1057,7 @@ export function DashboardApp({ data }: { data: DashboardData }) {
               <div className="empty-state">
                 <h3>No active dogs</h3>
                 <p>Add a dog with a photo in the content manager before scheduling walks.</p>
-                <a className="text-button" href="/admin">
+                <a className="text-button" href={adminURL('dogs')}>
                   Open the content manager <Icon name="external" size={15} />
                 </a>
               </div>
@@ -1059,6 +1070,7 @@ export function DashboardApp({ data }: { data: DashboardData }) {
                     name="dog"
                     defaultValue={modalDogId || activeDogs[0].id}
                     required
+                    data-autofocus
                   >
                     {activeDogs.map((dog) => (
                       <option key={dog.id} value={dog.id}>
@@ -1140,9 +1152,10 @@ export function DashboardApp({ data }: { data: DashboardData }) {
           <button
             className="modal-backdrop"
             aria-label="Close walk details"
+            tabIndex={-1}
             onClick={() => setDetailsWalkId(null)}
           />
-          <div className="booking-modal">
+          <div className="booking-modal" ref={detailsDialogRef} tabIndex={-1}>
             <div className="modal-heading">
               <div>
                 <p className="eyebrow">Walk details</p>
@@ -1244,6 +1257,22 @@ export function DashboardApp({ data }: { data: DashboardData }) {
                 </div>
               )}
             </dl>
+            <div className="details-actions">
+              {detailsWalk.walk.booking && (
+                <a
+                  className="secondary-button settings-action"
+                  href={adminURL('bookings', detailsWalk.walk.booking.id)}
+                >
+                  Edit booking <Icon name="external" size={14} />
+                </a>
+              )}
+              <a
+                className="secondary-button settings-action"
+                href={adminURL('walk-slots', detailsWalk.id)}
+              >
+                Edit walk in content manager <Icon name="external" size={14} />
+              </a>
+            </div>
           </div>
         </div>
       )}

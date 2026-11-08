@@ -24,10 +24,6 @@ const nextConfig: NextConfig = {
     // so they are rendered as-is instead of going through the Next.js image optimizer.
     unoptimized: true,
   },
-  // Don't block builds on type errors if the emitted JS is valid
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   // Prerender source maps add ~100 MB per static build worker
   enablePrerenderSourceMaps: false,
   experimental: {

@@ -52,7 +52,7 @@ Then, in the browser:
 
 1. Open **http://localhost:3000**. The first load can take a minute: the app is compiled, and the database file `shelter.db` is created and filled with sample data (see section 4). The terminal prints `Seed: added …` when the sample data is in.
 2. Open **http://localhost:3000/admin** and fill in the **create first user** form (email and password). This is your staff account.
-3. Open **http://localhost:3000/dashboard**. You are already signed in from step 2. Later you can sign in at http://localhost:3000/dashboard/login, or with the "Shelter login" link in the footer of the public site.
+3. Open **http://localhost:3000/dashboard**, or use **← Staff dashboard** at the top of the content manager's sidebar. You are already signed in from step 2. Later you can sign in at http://localhost:3000/dashboard/login, or with the "Shelter login" link in the footer of the public site.
 
 Next time you only need `pnpm dev`.
 

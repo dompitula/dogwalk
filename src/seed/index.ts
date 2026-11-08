@@ -222,7 +222,7 @@ async function runSeed(payload: Payload) {
   })
 
   const photos = await Promise.all(DOGS.map((dog) => preparePhoto(payload, dog)))
-  const dogIDs = new Map<SeedDog['key'], string | number>()
+  const dogIDs = new Map<SeedDog['key'], number>()
 
   for (const [index, dog] of DOGS.entries()) {
     const photo = photos[index]
@@ -258,7 +258,7 @@ async function runSeed(payload: Payload) {
     }
   }
 
-  const slotIDs: (string | number)[] = []
+  const slotIDs: number[] = []
   for (const slot of SLOTS) {
     const dog = DOGS.find((item) => item.key === slot.dog)!
     const startsAt = slotDate(slot.dayOffset, slot.time)

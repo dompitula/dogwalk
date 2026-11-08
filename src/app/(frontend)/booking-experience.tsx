@@ -1,7 +1,8 @@
 'use client'
 
 import Image from 'next/image'
-import { useActionState, useMemo, useState } from 'react'
+import { type FormEvent, startTransition, useActionState, useMemo, useState } from 'react'
+import { useModalDialog } from '@/lib/use-modal-dialog'
 import { createBooking, type BookingResult } from './actions'
 
 export type WalkOption = {
@@ -96,6 +97,20 @@ export function BookingExperience({ walks }: { walks: WalkOption[] }) {
   const [energy, setEnergy] = useState('all')
   const [selected, setSelected] = useState<WalkOption | null>(null)
   const [state, action, pending] = useActionState(createBooking, initialState)
+  const dialogRef = useModalDialog<HTMLDivElement>(selected !== null && !state.success, () =>
+    setSelected(null),
+  )
+  // Errors belong to the walk they were made on; typed values carry over to any walk.
+  const result = selected && state.slot === selected.id ? state : null
+  const values = state.values
+
+  // Submitted from onSubmit rather than <form action>: React clears a form after a form
+  // action runs, which would wipe what the visitor typed whenever there is an error.
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+    startTransition(() => action(formData))
+  }
 
   const filtered = useMemo(
     () =>
@@ -258,7 +273,11 @@ export function BookingExperience({ walks }: { walks: WalkOption[] }) {
           aria-modal="true"
           aria-labelledby="booking-title"
         >
-          <div className="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-t-[2rem] bg-[#fffdfa] shadow-2xl sm:rounded-[2rem]">
+          <div
+            ref={dialogRef}
+            tabIndex={-1}
+            className="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-t-[2rem] bg-[#fffdfa] shadow-2xl outline-none sm:rounded-[2rem]"
+          >
             <div className="flex items-start justify-between border-b border-[#e8ede8] px-6 py-5 sm:px-8">
               <div>
                 <p className="eyebrow">One last step</p>
@@ -305,31 +324,35 @@ export function BookingExperience({ walks }: { walks: WalkOption[] }) {
                   </p>
                 </div>
               </div>
-              <form action={action} className="space-y-4 p-6 sm:p-8">
+              <form onSubmit={submit} className="space-y-4 p-6 sm:p-8">
                 <input type="hidden" name="slot" value={selected.id} />
                 <Field
                   label="Full name"
                   name="fullName"
-                  error={state.errors?.fullName}
+                  error={result?.errors?.fullName}
+                  defaultValue={values?.fullName}
                   autoComplete="name"
+                  autofocus
                 />
                 <Field
                   label="Email address"
                   name="email"
                   type="email"
-                  error={state.errors?.email}
+                  error={result?.errors?.email}
+                  defaultValue={values?.email}
                   autoComplete="email"
                 />
                 <Field
                   label="Phone number"
                   name="phone"
                   type="tel"
-                  error={state.errors?.phone}
+                  error={result?.errors?.phone}
+                  defaultValue={values?.phone}
                   autoComplete="tel"
                 />
                 <label className="form-field">
                   <span>Dog walking experience</span>
-                  <select name="experience" defaultValue="" required>
+                  <select name="experience" defaultValue={values?.experience ?? ''} required>
                     <option value="" disabled>
                       Select one
                     </option>
@@ -337,7 +360,7 @@ export function BookingExperience({ walks }: { walks: WalkOption[] }) {
                     <option value="some">I have some experience</option>
                     <option value="experienced">I’m an experienced walker</option>
                   </select>
-                  {state.errors?.experience && <small>{state.errors.experience}</small>}
+                  {result?.errors?.experience && <small>{result.errors.experience}</small>}
                 </label>
                 <label className="form-field">
                   <span>
@@ -347,12 +370,16 @@ export function BookingExperience({ walks }: { walks: WalkOption[] }) {
                     name="notes"
                     rows={3}
                     maxLength={500}
+                    defaultValue={values?.notes}
                     placeholder="Accessibility needs, questions, or a note for the team"
                   />
                 </label>
-                {state.message && (
-                  <p className="rounded-xl bg-[#fff0ea] px-4 py-3 text-sm font-medium text-[#9f3f2a]">
-                    {state.message}
+                {result?.message && (
+                  <p
+                    role="alert"
+                    className="rounded-xl bg-[#fff0ea] px-4 py-3 text-sm font-medium text-[#9f3f2a]"
+                  >
+                    {result.message}
                   </p>
                 )}
                 <button
@@ -363,7 +390,8 @@ export function BookingExperience({ walks }: { walks: WalkOption[] }) {
                   <Icon name="check" className="h-4 w-4" />
                 </button>
                 <p className="text-center text-[11px] leading-5 text-[#7a887e]">
-                  The shelter will confirm arrival instructions by email. Please bring a photo ID.
+                  The shelter will contact you to confirm the walk and arrival details. Please bring
+                  a photo ID.
                 </p>
               </form>
             </div>
@@ -378,14 +406,19 @@ function Field({
   label,
   name,
   error,
+  defaultValue,
   type = 'text',
   autoComplete,
+  autofocus = false,
 }: {
   label: string
   name: string
   error?: string
+  defaultValue?: string
   type?: string
   autoComplete?: string
+  /** Receives focus when the booking dialog opens. */
+  autofocus?: boolean
 }) {
   return (
     <label className="form-field">
@@ -394,8 +427,10 @@ function Field({
         name={name}
         type={type}
         required
+        defaultValue={defaultValue}
         autoComplete={autoComplete}
         aria-invalid={Boolean(error)}
+        data-autofocus={autofocus || undefined}
       />
       {error && <small>{error}</small>}
     </label>

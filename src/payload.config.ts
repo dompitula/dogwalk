@@ -22,6 +22,11 @@ export default buildConfig({
   admin: {
     user: Admins.slug,
     constrainWidth: true,
+    components: {
+      // "← Staff dashboard" at the top of the sidebar. After changing admin components,
+      // run `pnpm generate:importmap` (the build also does it).
+      beforeNavLinks: ['/components/admin/DashboardLink#DashboardLink'],
+    },
     dashboard: {
       widgets: [],
       defaultLayout: [

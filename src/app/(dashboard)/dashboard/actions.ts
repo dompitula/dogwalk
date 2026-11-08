@@ -20,13 +20,13 @@ const SIGNED_OUT: ActionResult = {
   signedOut: true,
 }
 
-/** SQLite uses numeric IDs; the browser sends them back as strings. */
-const toID = (value: string) => (/^\d+$/.test(value) ? Number(value) : value)
+/** SQLite uses numeric IDs; the browser sends them back as strings. `null` if it is not an ID. */
+const toID = (value: unknown): number | null =>
+  typeof value === 'string' && /^\d+$/.test(value.trim()) ? Number(value) : null
 
-const relationID = (value: unknown) =>
-  value && typeof value === 'object' && 'id' in value
-    ? (value as { id: string | number }).id
-    : (value as string | number)
+/** A relationship field holds the related ID, or the related document when populated. */
+const relationID = (value: number | { id: number }) =>
+  typeof value === 'object' ? value.id : value
 
 const failure = (error: unknown, fallback: string): ActionResult => ({
   ok: false,
@@ -37,14 +37,14 @@ export async function createWalk(input: CreateWalkInput): Promise<ActionResult> 
   const { payload, user } = await getStaffSession()
   if (!user) return SIGNED_OUT
 
-  const dogId = typeof input?.dogId === 'string' ? input.dogId.trim() : ''
+  const dogId = toID(input?.dogId)
   const startsAt = new Date(typeof input?.startsAt === 'string' ? input.startsAt : '')
   const localLabel = typeof input?.localLabel === 'string' ? input.localLabel.trim() : ''
   const durationMinutes = Number(input?.durationMinutes)
   const route = typeof input?.route === 'string' ? input.route : ''
   const handlingNotes = typeof input?.handlingNotes === 'string' ? input.handlingNotes.trim() : ''
 
-  if (!dogId) return { ok: false, message: 'Choose a dog.' }
+  if (dogId === null) return { ok: false, message: 'Choose a dog.' }
   if (Number.isNaN(startsAt.getTime())) {
     return { ok: false, message: 'Choose a valid date and start time.' }
   }
@@ -62,7 +62,7 @@ export async function createWalk(input: CreateWalkInput): Promise<ActionResult> 
   try {
     dog = await payload.findByID({
       collection: 'dogs',
-      id: toID(dogId),
+      id: dogId,
       depth: 0,
       overrideAccess: false,
       user,
@@ -109,14 +109,15 @@ export async function setWalkStatus(walkId: string, status: WalkStatus): Promise
   const { payload, user } = await getStaffSession()
   if (!user) return SIGNED_OUT
 
-  if (typeof walkId !== 'string' || !walkId || !WALK_STATUSES.includes(status)) {
+  const id = toID(walkId)
+  if (id === null || !WALK_STATUSES.includes(status)) {
     return { ok: false, message: 'That status change is not valid.' }
   }
 
   try {
     const slot = await payload.findByID({
       collection: 'walk-slots',
-      id: toID(walkId),
+      id,
       depth: 0,
       overrideAccess: false,
       user,
@@ -193,14 +194,15 @@ export async function removeWalk(walkId: string): Promise<ActionResult> {
   const { payload, user } = await getStaffSession()
   if (!user) return SIGNED_OUT
 
-  if (typeof walkId !== 'string' || !walkId) {
+  const id = toID(walkId)
+  if (id === null) {
     return { ok: false, message: 'That walk could not be found.' }
   }
 
   try {
     const slot = await payload.findByID({
       collection: 'walk-slots',
-      id: toID(walkId),
+      id,
       depth: 0,
       overrideAccess: false,
       user,
