@@ -120,27 +120,26 @@ export function BookingExperience({ walks }: { walks: WalkOption[] }) {
   )
 
   if (state.success) {
+    const requestedWalk = walks.find(walk => walk.id === state.slot) ?? selected
     return (
-      <section id="walks" className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
-        <div className="mx-auto max-w-2xl rounded-[2rem] border border-[#dce9df] bg-[#f3f9f3] px-6 py-14 text-center shadow-[0_20px_70px_rgba(31,66,44,.08)] sm:px-12">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#205c3b] text-white">
-            <Icon name="check" className="h-7 w-7" />
-          </span>
-          <p className="mt-6 text-xs font-bold uppercase tracking-[.2em] text-[#db5d3f]">
-            Walk reserved
-          </p>
-          <h2 className="mt-3 font-serif text-4xl text-[#173f2b]">
-            A good day is on the calendar.
-          </h2>
-          <p className="mx-auto mt-4 max-w-lg text-base leading-7 text-[#577061]">
-            {state.message}
-          </p>
-          <a
-            href="#top"
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#173f2b] px-6 py-3 text-sm font-bold text-white"
-          >
-            Back to the top <Icon name="arrow" className="h-4 w-4" />
-          </a>
+      <section id="walks" aria-labelledby="request-heading" className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-20">
+        <div className="mx-auto max-w-3xl overflow-hidden rounded-3xl border border-[#dfe7dd] bg-white shadow-[0_12px_48px_rgba(31,66,44,.06)]">
+          <div className="border-b border-[#e5ebe1] bg-[#f3f7ef] px-6 py-8 sm:px-10">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#d8e4d2] bg-white px-3 py-1.5 text-xs font-semibold text-[#356044]"><Icon name="check" className="h-3.5 w-3.5" /> Request received</div>
+            <h2 id="request-heading" className="font-serif text-3xl leading-tight text-[#173f2b] sm:text-4xl">Thanks{state.firstName ? ', ' + state.firstName : ''}. You are on the list.</h2>
+            <p className="mt-3 max-w-lg text-sm leading-6 text-[#657665]">Your request is saved. The shelter will get in touch to approve your walk and share arrival details.</p>
+          </div>
+          <div className="px-6 py-7 sm:px-10">
+            {requestedWalk && <div className="flex items-center gap-4 rounded-2xl border border-[#e6eadd] bg-[#fafbf7] p-4">
+              <Image src={requestedWalk.dog.photo.url} alt={requestedWalk.dog.photo.alt} width={80} height={80} className="h-20 w-20 shrink-0 rounded-xl object-cover" />
+              <div className="min-w-0"><p className="text-xs text-[#798773]">Your walking companion</p><h3 className="mt-0.5 text-lg font-semibold text-[#244a33]">{requestedWalk.dog.name}</h3><p className="mt-1 text-xs leading-5 text-[#647460]">{formatDay(requestedWalk.startsAt)} &middot; {formatTime(requestedWalk.startsAt)} &middot; {requestedWalk.durationMinutes} min</p><p className="text-xs leading-5 text-[#647460]">{requestedWalk.shelter.name}</p></div>
+            </div>}
+            <div className="mt-7 grid gap-6 sm:grid-cols-2" role="status">
+              <div className="flex gap-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#eef3e8] text-xs font-bold text-[#42653b]">1</span><div><h3 className="text-sm font-semibold text-[#254b34]">{state.emailSent ? 'Check your inbox' : 'Your request is safe'}</h3><p className="mt-1 text-xs leading-5 text-[#76816f]">{state.emailSent ? 'We sent a receipt for your request. Check your spam folder too.' : 'The email could not be sent, but your request is saved. There is no need to book again.'}</p></div></div>
+              <div className="flex gap-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#eef3e8] text-xs font-bold text-[#42653b]">2</span><div><h3 className="text-sm font-semibold text-[#254b34]">Wait for the shelter</h3><p className="mt-1 text-xs leading-5 text-[#76816f]">Your walk is awaiting approval. The team will contact you to confirm.</p></div></div>
+            </div>
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-[#e9ede3] pt-6"><span className="inline-flex items-center gap-2 text-xs text-[#7c8067]"><span className="h-1.5 w-1.5 rounded-full bg-[#b29753]" /> Awaiting shelter approval</span><a href="#top" className="inline-flex items-center gap-2 rounded-full bg-[#173f2b] px-5 py-3 text-xs font-semibold text-white transition hover:bg-[#28583d]">Back to home <Icon name="arrow" className="h-4 w-4" /></a></div>
+          </div>
         </div>
       </section>
     )

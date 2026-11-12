@@ -986,6 +986,15 @@ export function DashboardApp({ data }: { data: DashboardData }) {
               </div>
             </div>
             <div className="settings-list">
+              <div className="settings-row">
+                <div>
+                  <strong>Email settings</strong>
+                  <span>Manage booking emails, sender details and test delivery.</span>
+                </div>
+                <a className="secondary-button settings-action" href="/dashboard/email">
+                  Open <Icon name="external" size={14} />
+                </a>
+              </div>
               <label>
                 <div>
                   <strong>Default walk duration</strong>

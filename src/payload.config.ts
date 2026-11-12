@@ -5,6 +5,7 @@ import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { mcpPlugin } from '@payloadcms/plugin-mcp'
 import { en as adminLanguage } from '@payloadcms/translations/languages/en'
+import { EmailSettings } from './globals/EmailSettings'
 import { Admins } from './collections/Admins'
 import { Media } from './collections/Media'
 import { Folders } from './collections/Folders'
@@ -42,6 +43,7 @@ export default buildConfig({
     fallbackLanguage: 'en',
     supportedLanguages: { en: adminLanguage },
   },
+  globals: [EmailSettings],
   collections: [Admins, Media, Folders, Tags, Shelters, Dogs, WalkSlots, Bookings],
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

@@ -12,6 +12,9 @@ export function DashboardLink() {
       <a className="nav__link" href="/dashboard" id="nav-staff-dashboard">
         <span className="nav__link-label">← Staff dashboard</span>
       </a>
+      <a className="nav__link" href="/dashboard/email" id="nav-email-settings">
+        <span className="nav__link-label">Email settings</span>
+      </a>
     </div>
   )
 }

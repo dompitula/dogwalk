@@ -1,5 +1,7 @@
 'use server'
 
+import { buildBookingEmail } from '@/lib/email/booking-email'
+import { sendEmail } from '@/lib/email/email-settings'
 import config from '@payload-config'
 import { getPayload } from 'payload'
 
@@ -12,6 +14,8 @@ export type BookingValues = {
 }
 
 export type BookingResult = {
+  emailSent?: boolean
+  firstName?: string
   success: boolean
   message: string
   /** The walk this result belongs to, so its message only shows on that walk's form. */
@@ -71,10 +75,20 @@ export async function createBooking(
       },
     })
 
+    let emailSent = false
+    try {
+      const message = await buildBookingEmail(payload, Number(slot), fullName)
+      emailSent = await sendEmail(payload, email, message.subject, message.text, message)
+    } catch {
+      console.warn('Booking saved, but confirmation email could not be sent.')
+    }
+
     return {
       success: true,
+      emailSent,
+      firstName: fullName.split(' ')[0],
       slot,
-      message: `Thanks, ${fullName.split(' ')[0]}! Your walk is requested. The shelter will contact you to confirm it.`,
+      message: `Thanks, ${fullName.split(' ')[0]}! Your walk is requested. ${emailSent ? 'A confirmation email has been sent. Check your inbox and spam folder.' : 'Your request is saved, but we could not send the confirmation email. You do not need to book again.'} The shelter will contact you to confirm it.`,
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : ''
