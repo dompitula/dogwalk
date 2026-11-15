@@ -5,6 +5,7 @@ import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { mcpPlugin } from '@payloadcms/plugin-mcp'
 import { en as adminLanguage } from '@payloadcms/translations/languages/en'
+import { payloadResendAdapter } from './lib/email/payload-adapter'
 import { EmailSettings } from './globals/EmailSettings'
 import { Admins } from './collections/Admins'
 import { Media } from './collections/Media'
@@ -20,6 +21,7 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
+  email: payloadResendAdapter,
   admin: {
     user: Admins.slug,
     constrainWidth: true,

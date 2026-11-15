@@ -19,14 +19,30 @@ export function decryptEmailKey(value: string, secret: string) {
   return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString('utf8')
 }
 export async function sendEmail(payload: Payload, to: string, subject: string, text: string, rich?: { html: string; attachments: InlineAttachment[] }, req?: PayloadRequest) {
+  return deliverEmail(payload, { to: [to], subject, text, ...(rich ? { html: rich.html, attachments: rich.attachments } : {}) }, req)
+}
+
+export type ResendMessage = {
+  to: string[]
+  subject: string
+  text?: string
+  html?: string
+  cc?: string[]
+  bcc?: string[]
+  reply_to?: string[]
+  attachments?: InlineAttachment[]
+}
+
+/** Load credentials only when sending, after the database is ready. */
+export async function deliverEmail(payload: Payload, message: ResendMessage, req?: PayloadRequest, requireEnabled = true) {
   const settings = await payload.findGlobal({ slug: 'email-settings', overrideAccess: true, req })
-  if (!settings.enabled || !settings.from || !settings.encryptedKey) return false
+  if ((requireEnabled && !settings.enabled) || !settings.from || !settings.encryptedKey) return false
   const apiKey = decryptEmailKey(settings.encryptedKey, payload.secret)
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     signal: AbortSignal.timeout(10000),
     headers: { Authorization: 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: settings.from, to: [to], subject, text, ...(rich ? { html: rich.html, attachments: rich.attachments } : {}) }),
+    body: JSON.stringify({ ...message, from: settings.from }),
   })
   if (!response.ok) {
     const details = await response.json().catch(() => null) as { message?: string } | null
