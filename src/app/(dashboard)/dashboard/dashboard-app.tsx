@@ -224,6 +224,15 @@ export function DashboardApp({ data }: { data: DashboardData }) {
   // The dashboard depends on the viewer's clock and time zone, so it renders in the browser only.
   useEffect(() => {
     setMounted(true)
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('view') === 'dogs') {
+      setActiveNav('Dogs')
+      if (params.get('created') === '1') {
+        setNotice({ kind: 'success', text: 'Dog added successfully.' })
+        params.delete('created')
+        window.history.replaceState(null, '', window.location.pathname + '?' + params.toString())
+      }
+    }
     try {
       const stored = Number(window.localStorage.getItem(DURATION_STORAGE_KEY))
       if ((WALK_DURATIONS as readonly number[]).includes(stored)) setDefaultDuration(stored)
@@ -871,10 +880,16 @@ export function DashboardApp({ data }: { data: DashboardData }) {
                           <strong>{dog.temperament || dog.traits.join(', ') || '—'}</strong>
                         </div>
                         <div>
-                          <span>Energy · Age</span>
-                          <strong>
-                            {ENERGY_LABELS[dog.energy] ?? dog.energy} · {dog.ageLabel}
-                          </strong>
+                          <span>Energy</span>
+                          <strong>{ENERGY_LABELS[dog.energy] ?? dog.energy}</strong>
+                        </div>
+                        <div>
+                          <span>Age</span>
+                          <strong>{dog.ageLabel}</strong>
+                        </div>
+                        <div>
+                          <span>Special care</span>
+                          <strong>{dog.specialCare.join(', ') || 'None recorded'}</strong>
                         </div>
                         <div>
                           <span>Next walk</span>
@@ -1205,6 +1220,14 @@ export function DashboardApp({ data }: { data: DashboardData }) {
               <div>
                 <dt>Temperament</dt>
                 <dd>{detailsWalk.dog?.temperament || '—'}</dd>
+              </div>
+              <div className="full">
+                <dt>Special care</dt>
+                <dd>{detailsWalk.dog?.specialCare.join(', ') || 'None recorded'}</dd>
+              </div>
+              <div className="full">
+                <dt>Care instructions</dt>
+                <dd>{detailsWalk.dog?.careNotes || 'None recorded'}</dd>
               </div>
               <div className="full">
                 <dt>Handling notes</dt>

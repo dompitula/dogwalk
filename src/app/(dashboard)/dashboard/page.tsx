@@ -56,6 +56,8 @@ export default async function DashboardPage() {
       energy: dog.energy,
       kennel: dog.kennel ?? null,
       temperament: dog.temperament ?? null,
+      specialCare: dog.specialCare ?? [],
+      careNotes: dog.careNotes ?? null,
       traits: (dog.traits ?? []).map((trait) => trait.label),
       active: Boolean(dog.active),
       photoUrl: photo?.url ?? null,

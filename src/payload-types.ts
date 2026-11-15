@@ -317,6 +317,25 @@ export interface Dog {
    * Short handling note, e.g. “Shy at first”. Staff only.
    */
   temperament?: string | null;
+  /**
+   * Select all known care needs. Leave empty if none are recorded. Staff only.
+   */
+  specialCare?:
+    | (
+        | 'Limited mobility'
+        | 'Short walks only'
+        | 'Vision impairment'
+        | 'Hearing impairment'
+        | 'Medication schedule'
+        | 'Dietary restrictions'
+        | 'Recovering from treatment'
+        | 'Other care needs'
+      )[]
+    | null;
+  /**
+   * Add practical instructions for shelter staff, including details for Other care needs. Staff only.
+   */
+  careNotes?: string | null;
   active?: boolean | null;
   createdBy?: {
     relationTo: 'admins';
@@ -628,6 +647,8 @@ export interface DogsSelect<T extends boolean = true> {
       };
   kennel?: T;
   temperament?: T;
+  specialCare?: T;
+  careNotes?: T;
   active?: T;
   createdBy?: T;
   updatedBy?: T;
