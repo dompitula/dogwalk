@@ -1,23 +1,6 @@
-import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'node:crypto'
 import type { Payload, PayloadRequest } from 'payload'
 import type { InlineAttachment } from './booking-email'
 
-function key(secret: string) {
-  if (!secret) throw new Error('Application secret is missing.')
-  return scryptSync(secret, 'shelterwalk-email-settings-v1', 32)
-}
-export function encryptEmailKey(value: string, secret: string) {
-  const iv = randomBytes(12)
-  const cipher = createCipheriv('aes-256-gcm', key(secret), iv)
-  const encrypted = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()])
-  return [iv, cipher.getAuthTag(), encrypted].map(part => part.toString('base64')).join('.')
-}
-export function decryptEmailKey(value: string, secret: string) {
-  const [iv, tag, encrypted] = value.split('.').map(part => Buffer.from(part, 'base64'))
-  const decipher = createDecipheriv('aes-256-gcm', key(secret), iv)
-  decipher.setAuthTag(tag)
-  return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString('utf8')
-}
 export async function sendEmail(payload: Payload, to: string, subject: string, text: string, rich?: { html: string; attachments: InlineAttachment[] }, req?: PayloadRequest) {
   return deliverEmail(payload, { to: [to], subject, text, ...(rich ? { html: rich.html, attachments: rich.attachments } : {}) }, req)
 }
@@ -36,13 +19,18 @@ export type ResendMessage = {
 /** Load credentials only when sending, after the database is ready. */
 export async function deliverEmail(payload: Payload, message: ResendMessage, req?: PayloadRequest, requireEnabled = true) {
   const settings = await payload.findGlobal({ slug: 'email-settings', overrideAccess: true, req })
-  if ((requireEnabled && !settings.enabled) || !settings.from || !settings.encryptedKey) return false
-  const apiKey = decryptEmailKey(settings.encryptedKey, payload.secret)
+  if ((requireEnabled && !settings.enabled) || !settings.from) return false
+  const apiKey = process.env.RESEND_API_KEY?.trim()
+  if (!apiKey) return false
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     signal: AbortSignal.timeout(10000),
     headers: { Authorization: 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...message, from: settings.from }),
+    body: JSON.stringify({
+      ...message,
+      from: settings.from,
+      ...(settings.replyTo ? { reply_to: [settings.replyTo] } : {}),
+    }),
   })
   if (!response.ok) {
     const details = await response.json().catch(() => null) as { message?: string } | null

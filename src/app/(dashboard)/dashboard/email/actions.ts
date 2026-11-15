@@ -1,16 +1,19 @@
 'use server'
 import { buildBookingEmail } from '@/lib/email/booking-email'
 import { getStaffSession } from '@/lib/staff-auth'
-import { encryptEmailKey, sendEmail } from '@/lib/email/email-settings'
+import { sendEmail } from '@/lib/email/email-settings'
 export type EmailResult = { message: string; ok: boolean }
 export async function saveEmailSettings(_state: EmailResult, form: FormData): Promise<EmailResult> {
   const { payload, user } = await getStaffSession()
   if (!user) return { ok: false, message: 'Please sign in again.' }
   const from = String(form.get('from') || '').trim()
-  const apiKey = String(form.get('apiKey') || '').trim()
+  const replyTo = String(form.get('replyTo') || '').trim()
   const timeZone = String(form.get('timeZone') || '').trim()
   const enabled = form.get('enabled') === 'on'
-  if (from.length > 254 || apiKey.length > 256 || timeZone.length > 100) return { ok: false, message: 'One of the settings is too long.' }
+  if (from.length > 254 || replyTo.length > 254 || timeZone.length > 100) return { ok: false, message: 'One of the settings is too long.' }
+  if (replyTo && !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(replyTo)) {
+    return { ok: false, message: 'Enter a valid reply-to email address.' }
+  }
   const sender = from.includes('<') ? from.match(/<([^<>]+)>$/)?.[1] || '' : from
   if ((enabled || from) && (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(sender) || /[\r\n]/.test(from))) {
     return { ok: false, message: 'Enter a valid sender address.' }
@@ -18,13 +21,10 @@ export async function saveEmailSettings(_state: EmailResult, form: FormData): Pr
   try { new Intl.DateTimeFormat('en', { timeZone }).format() } catch {
     return { ok: false, message: 'Enter a valid time zone, such as Europe/Warsaw.' }
   }
-  if (apiKey && (!apiKey.startsWith('re_') || /\s/.test(apiKey))) return { ok: false, message: 'Enter a valid Resend API key.' }
   try {
-    const previous = await payload.findGlobal({ slug: 'email-settings', overrideAccess: true })
-    if (enabled && !apiKey && !previous.encryptedKey) return { ok: false, message: 'Enter your Resend API key before enabling emails.' }
+    if (enabled && !process.env.RESEND_API_KEY?.trim()) return { ok: false, message: 'Set RESEND_API_KEY in .env and restart the app before enabling emails.' }
     await payload.updateGlobal({ slug: 'email-settings', overrideAccess: true, data: {
-      enabled, from, timeZone,
-      ...(apiKey ? { encryptedKey: encryptEmailKey(apiKey, payload.secret) } : {}),
+      enabled, from, replyTo, timeZone,
     } })
     return { ok: true, message: 'Email settings saved. They apply immediately.' }
   } catch { return { ok: false, message: 'Settings could not be saved. Please try again.' } }

@@ -754,6 +754,7 @@ export interface EmailSetting {
   id: number;
   enabled?: boolean | null;
   from?: string | null;
+  replyTo?: string | null;
   encryptedKey?: string | null;
   timeZone?: string | null;
   createdBy?: {
@@ -774,6 +775,7 @@ export interface EmailSetting {
 export interface EmailSettingsSelect<T extends boolean = true> {
   enabled?: T;
   from?: T;
+  replyTo?: T;
   encryptedKey?: T;
   timeZone?: T;
   createdBy?: T;
