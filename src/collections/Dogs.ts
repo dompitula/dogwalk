@@ -1,4 +1,5 @@
 import type { CollectionConfig, FieldAccess } from 'payload'
+import { SPECIAL_CARE_OPTIONS } from '../lib/dog-options'
 
 // Kennel and temperament are staff notes used by the dashboard; the public site never sees them.
 const staffOnly: FieldAccess = ({ req }) => req.user?.collection === 'admins'
@@ -11,6 +12,7 @@ export const Dogs: CollectionConfig = {
   admin: {
     group: 'Walks',
     useAsTitle: 'name',
+    components: { edit: { SaveButton: '/components/admin/DogSaveButton#DogSaveButton' } },
     defaultColumns: ['name', 'shelter', 'breed', 'energy', 'kennel'],
   },
   fields: [
@@ -42,6 +44,8 @@ export const Dogs: CollectionConfig = {
       label: 'Age',
       type: 'text',
       required: true,
+      maxLength: 40,
+      admin: { components: { Field: '/components/admin/DogChoiceField#DogChoiceField' } },
     },
     {
       name: 'size',
@@ -84,23 +88,44 @@ export const Dogs: CollectionConfig = {
     },
     {
       name: 'kennel',
+      label: 'Kennel',
       type: 'text',
       maxLength: 20,
       access: { read: staffOnly },
       admin: {
+        components: { Field: '/components/admin/DogChoiceField#DogChoiceField' },
         position: 'sidebar',
         description: 'Kennel or run, e.g. “A-12”. Staff only.',
       },
     },
     {
       name: 'temperament',
+      label: 'Temperament',
       type: 'text',
       maxLength: 80,
       access: { read: staffOnly },
       admin: {
+        components: { Field: '/components/admin/DogChoiceField#DogChoiceField' },
         position: 'sidebar',
         description: 'Short handling note, e.g. “Shy at first”. Staff only.',
       },
+    },
+    {
+      name: 'specialCare',
+      label: 'Special care needs',
+      type: 'select',
+      hasMany: true,
+      options: SPECIAL_CARE_OPTIONS.map(value => ({ label: value, value })),
+      access: { read: staffOnly },
+      admin: { components: { Field: '/components/admin/SpecialCareField#SpecialCareField' }, description: 'Select all known care needs. Leave empty if none are recorded. Staff only.' },
+    },
+    {
+      name: 'careNotes',
+      label: 'Care instructions',
+      type: 'textarea',
+      maxLength: 1000,
+      access: { read: staffOnly },
+      admin: { description: 'Add practical instructions for shelter staff, including details for Other care needs. Staff only.' },
     },
     {
       name: 'active',

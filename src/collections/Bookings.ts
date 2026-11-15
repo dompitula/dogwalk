@@ -1,4 +1,6 @@
 import type { CollectionConfig } from 'payload'
+import { sendCancellationEmail } from '../lib/email/send-cancellation-email'
+import { sendApprovalEmail } from '../lib/email/send-approval-email'
 import { BOOKING_STATUS_OPTIONS } from '../lib/walks'
 
 const isAdmin = ({ req }: { req: { user?: { collection?: string } | null } }) =>
@@ -43,6 +45,8 @@ export const Bookings: CollectionConfig = {
       },
     ],
     afterChange: [
+      sendApprovalEmail,
+      sendCancellationEmail,
       async ({ doc, operation, req }) => {
         if (operation !== 'create') return
         const slotID = typeof doc.slot === 'object' ? doc.slot.id : doc.slot

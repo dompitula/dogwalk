@@ -113,8 +113,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | 'en' | 'en'[];
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'email-settings': EmailSetting;
+  };
+  globalsSelect: {
+    'email-settings': EmailSettingsSelect<false> | EmailSettingsSelect<true>;
+  };
   locale: 'en';
   widgets: {
     welcome: WelcomeWidget;
@@ -313,6 +317,25 @@ export interface Dog {
    * Short handling note, e.g. “Shy at first”. Staff only.
    */
   temperament?: string | null;
+  /**
+   * Select all known care needs. Leave empty if none are recorded. Staff only.
+   */
+  specialCare?:
+    | (
+        | 'Limited mobility'
+        | 'Short walks only'
+        | 'Vision impairment'
+        | 'Hearing impairment'
+        | 'Medication schedule'
+        | 'Dietary restrictions'
+        | 'Recovering from treatment'
+        | 'Other care needs'
+      )[]
+    | null;
+  /**
+   * Add practical instructions for shelter staff, including details for Other care needs. Staff only.
+   */
+  careNotes?: string | null;
   active?: boolean | null;
   createdBy?: {
     relationTo: 'admins';
@@ -624,6 +647,8 @@ export interface DogsSelect<T extends boolean = true> {
       };
   kennel?: T;
   temperament?: T;
+  specialCare?: T;
+  careNotes?: T;
   active?: T;
   createdBy?: T;
   updatedBy?: T;
@@ -720,6 +745,42 @@ export interface PayloadLlmInstructionsSelect<T extends boolean = true> {
   updatedBy?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-settings".
+ */
+export interface EmailSetting {
+  id: number;
+  enabled?: boolean | null;
+  from?: string | null;
+  encryptedKey?: string | null;
+  timeZone?: string | null;
+  createdBy?: {
+    relationTo: 'admins';
+    value: number | Admin;
+  } | null;
+  updatedBy?: {
+    relationTo: 'admins';
+    value: number | Admin;
+  } | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-settings_select".
+ */
+export interface EmailSettingsSelect<T extends boolean = true> {
+  enabled?: T;
+  from?: T;
+  encryptedKey?: T;
+  timeZone?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

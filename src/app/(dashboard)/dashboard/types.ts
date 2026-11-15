@@ -9,6 +9,8 @@ export type DashboardDog = {
   ageLabel: string
   energy: string
   kennel: string | null
+  specialCare: string[]
+  careNotes: string | null
   temperament: string | null
   traits: string[]
   active: boolean
