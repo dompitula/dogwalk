@@ -6,7 +6,9 @@ export const EmailSettings: GlobalConfig = {
   fields: [
     { name: 'enabled', type: 'checkbox', defaultValue: false },
     { name: 'from', type: 'text' },
-    { name: 'encryptedKey', type: 'text' },
+    { name: 'replyTo', type: 'email' },
+    // Legacy column kept for database compatibility; email delivery no longer reads it.
+    { name: 'encryptedKey', type: 'text', admin: { hidden: true } },
     { name: 'timeZone', type: 'text', defaultValue: 'Europe/Warsaw' },
   ],
 }

@@ -1,4 +1,4 @@
-﻿import type { EmailAdapter, SendEmailOptions } from 'payload'
+import type { EmailAdapter, SendEmailOptions } from 'payload'
 import { deliverEmail } from './email-settings'
 
 function addresses(value: SendEmailOptions['to']): string[] {
@@ -12,7 +12,7 @@ function content(value: SendEmailOptions['html']): string | undefined {
   throw new Error('System email content must be text or HTML, not a stream or file.')
 }
 
-/** System emails share the credentials saved in Email settings. */
+/** System emails use RESEND_API_KEY from .env and the sender saved in Email settings. */
 export const payloadResendAdapter: EmailAdapter<boolean> = ({ payload }) => ({
   name: 'saved-resend-settings',
   // Payload needs defaults while initializing; deliverEmail always uses the saved sender.
@@ -35,7 +35,7 @@ export const payloadResendAdapter: EmailAdapter<boolean> = ({ payload }) => ({
       ...(bcc.length ? { bcc } : {}),
       ...(replyTo.length ? { reply_to: replyTo } : {}),
     }, undefined, false)
-    if (!sent) throw new Error('Email is not configured. Save a Resend API key and sender in Dashboard > Email settings.')
+    if (!sent) throw new Error('Email is not configured. Set RESEND_API_KEY in .env, restart the app and save a sender in Dashboard > Email settings.')
     return true
   },
 })
