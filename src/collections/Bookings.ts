@@ -29,15 +29,17 @@ export const Bookings: CollectionConfig = {
         const slotID = toID(data.slot)
         if (slotID === null) throw new Error('Please choose an available walk.')
 
+        // A walk that was deleted meanwhile is no longer available either (null, not an error).
         const slot = await req.payload.findByID({
           collection: 'walk-slots',
           id: slotID,
           depth: 0,
           overrideAccess: false,
+          disableErrors: true,
           req,
         })
 
-        if (slot.status !== 'available' || new Date(slot.startsAt) <= new Date()) {
+        if (!slot || slot.status !== 'available' || new Date(slot.startsAt) <= new Date()) {
           throw new Error('That walk is no longer available. Please choose another time.')
         }
 

@@ -137,4 +137,14 @@ describe('createBooking', () => {
     expect(result).toMatchObject({ success: false, message: TAKEN, values: VALID })
     expect(await count('bookings')).toBe(0)
   })
+
+  it('asks the visitor to choose another time when the walk was removed meanwhile', async () => {
+    const slot = await createSlot()
+    await payload.delete({ collection: 'walk-slots', id: slot.id, overrideAccess: true })
+
+    const result = await book(slot.id)
+
+    expect(result).toMatchObject({ success: false, message: TAKEN, values: VALID })
+    expect(await count('bookings')).toBe(0)
+  })
 })

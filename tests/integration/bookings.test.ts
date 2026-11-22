@@ -66,6 +66,10 @@ describe('booking a walk', () => {
     )
   })
 
+  it('rejects a walk that does not exist', async () => {
+    await expect(publicCreate({ slot: 999_999 })).rejects.toThrow(NO_LONGER_AVAILABLE)
+  })
+
   it('rejects a second booking of the same walk', async () => {
     const slot = await createSlot()
     await publicCreate({ slot: slot.id })
