@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# deploy.sh: build ShelterWalk and start it in production mode.
+# deploy.sh: build The Good Walk and start it in production mode.
 #
 # Everything the app needs is installed into .venv/ in this folder: Node.js
 # (the version pinned in .mise.toml), pnpm (the version pinned in package.json)
@@ -137,7 +137,7 @@ run_teardown() {
     local abs pid
     abs="$(cd "$(dirname "$db")" && pwd -P)/$(basename "$db")"
     pid="$(find /proc/[0-9]*/fd -lname "$abs" 2>/dev/null | head -n 1 | cut -d/ -f3 || true)"
-    [ -z "$pid" ] || die "ShelterWalk is still running (process $pid has $db open). Stop it with Ctrl+C in its terminal, then run the teardown again."
+    [ -z "$pid" ] || die "The Good Walk is still running (process $pid has $db open). Stop it with Ctrl+C in its terminal, then run the teardown again."
   fi
 
   echo "This deletes, in $(native_path "$root"):"
@@ -310,5 +310,5 @@ step "Build"
 pnpm run build
 
 step "Start"
-echo "ShelterWalk is starting on http://localhost:$port (stop it with Ctrl+C)"
+echo "The Good Walk is starting on http://localhost:$port (stop it with Ctrl+C)"
 exec pnpm run start --port "$port"

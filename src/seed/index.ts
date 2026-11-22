@@ -168,7 +168,10 @@ const localDateLabel = (date: Date) =>
 
 /** Downloads the dog's photo; falls back to the bundled placeholder when offline. */
 async function preparePhoto(payload: Payload, dog: SeedDog) {
-  const placeholder = { filePath: path.join(PLACEHOLDER_DIR, `${dog.key}.jpg`), cleanup: async () => {} }
+  const placeholder = {
+    filePath: path.join(PLACEHOLDER_DIR, `${dog.key}.jpg`),
+    cleanup: async () => {},
+  }
 
   try {
     const response = await fetch(dog.photoURL, { signal: AbortSignal.timeout(10_000) })
@@ -177,13 +180,15 @@ async function preparePhoto(payload: Payload, dog: SeedDog) {
       throw new Error(`HTTP ${response.status} (${contentType || 'no content type'})`)
     }
 
-    const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'shelter-walk-seed-'))
+    const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'good-walk-seed-'))
     const filePath = path.join(directory, `${dog.key}.jpg`)
     await fs.writeFile(filePath, Buffer.from(await response.arrayBuffer()))
     return { filePath, cleanup: () => fs.rm(directory, { recursive: true, force: true }) }
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error)
-    payload.logger.warn(`Seed: could not download a photo of ${dog.name} (${reason}). Using a placeholder.`)
+    payload.logger.warn(
+      `Seed: could not download a photo of ${dog.name} (${reason}). Using a placeholder.`,
+    )
     return placeholder
   }
 }
@@ -210,7 +215,8 @@ async function runSeed(payload: Payload) {
       slug: 'riverside-animal-shelter',
       neighborhood: 'Riverside',
       address: '24 Willow Lane',
-      description: 'Our main shelter, a short stroll from the river paths and the community garden.',
+      description:
+        'Our main shelter, a short stroll from the river paths and the community garden.',
       active: true,
     },
   })
@@ -295,13 +301,13 @@ async function runSeed(payload: Payload) {
   )
 }
 
-const seedState = globalThis as typeof globalThis & { __shelterWalkSeed?: Promise<void> }
+const seedState = globalThis as typeof globalThis & { __goodWalkSeed?: Promise<void> }
 
 export function seedStarterData(payload: Payload): Promise<void> {
   // Run at most once per server process, even if Payload initialises more than once.
-  seedState.__shelterWalkSeed ??= runSeed(payload).catch((error: unknown) => {
+  seedState.__goodWalkSeed ??= runSeed(payload).catch((error: unknown) => {
     const reason = error instanceof Error ? error.message : String(error)
     payload.logger.error(`Seed: could not add the starter data: ${reason}`)
   })
-  return seedState.__shelterWalkSeed
+  return seedState.__goodWalkSeed
 }

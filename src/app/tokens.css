@@ -1,0 +1,104 @@
+/*
+ * Design tokens shared by the public site (styles.css) and the staff dashboard
+ * (dashboard.css). Tailwind turns each token into utilities (bg-forest-900,
+ * text-moss-600, border-sand-300/50, shadow-card…) and into CSS variables
+ * (var(--color-forest-900)) for the dashboard's stylesheet.
+ *
+ * These are the only colours: Tailwind's default palette is switched off, so a colour
+ * that is not listed here does not exist. Add a token instead of writing a colour
+ * in a component or stylesheet.
+ */
+@theme {
+  --color-*: initial;
+
+  --color-white: #ffffff;
+  /* Public site background */
+  --color-cream: #fffdfa;
+
+  /* Warm neutrals: dashboard surfaces and borders */
+  --color-sand-50: #faf9f5;
+  --color-sand-100: #f5f3ed;
+  --color-sand-200: #eceae3;
+  --color-sand-300: #e4e1d8;
+  --color-sand-400: #dcdad2;
+
+  /* Green-tinted neutrals: public site surfaces and borders */
+  --color-sage-50: #f7faf7;
+  --color-sage-100: #f0f6f1;
+  --color-sage-200: #e5ebe5;
+  --color-sage-300: #dce5de;
+  --color-sage-400: #c9d7cd;
+
+  /* Text, darkest to lightest */
+  --color-moss-950: #1e2a25;
+  --color-moss-900: #293a33;
+  --color-moss-800: #33463f;
+  --color-moss-700: #47564f;
+  --color-moss-600: #5e6964;
+  --color-moss-500: #6f7b75;
+  --color-moss-400: #87938d;
+  --color-moss-300: #9aa39f;
+  --color-moss-200: #aebfb8;
+
+  /* Brand greens */
+  --color-forest-950: #102b1d;
+  --color-forest-900: #173f2b;
+  --color-forest-800: #24563b;
+  --color-forest-700: #2d6446;
+  --color-forest-600: #3e7a5d;
+  --color-forest-500: #5e9879;
+  --color-forest-200: #cfe3d4;
+  --color-forest-100: #e6f3e9;
+
+  /* Deep teal greens: dashboard sidebar, headings and selected states */
+  --color-pine-900: #18352d;
+  --color-pine-800: #24473c;
+  --color-pine-700: #2f5a4b;
+
+  /* Amber: highlights, the paw mark, dashboard actions */
+  --color-amber-50: #fff0e3;
+  --color-amber-200: #f6d2ae;
+  --color-amber-300: #ffc66d;
+  --color-amber-400: #f2a33b;
+  --color-amber-500: #e8873f;
+  --color-amber-600: #d4732f;
+
+  /* Coral: public calls to action, errors */
+  --color-coral-50: #fff0ea;
+  --color-coral-100: #fbe9e6;
+  --color-coral-200: #f0cbc4;
+  --color-coral-400: #ea6a49;
+  --color-coral-500: #db5d3f;
+  --color-coral-600: #c84e32;
+  --color-coral-700: #b14a2e;
+  --color-coral-800: #8d3b31;
+
+  /* Walk statuses: Needs Volunteer (gold), Checked Out (sky), Returned (iris), Cancelled (clay) */
+  --color-gold-100: #fff3d6;
+  --color-gold-500: #d9a239;
+  --color-gold-600: #b88417;
+  --color-gold-700: #9a6b13;
+  --color-sky-100: #e3f2f7;
+  --color-sky-500: #5797ae;
+  --color-sky-700: #326c83;
+  --color-iris-100: #ebeef6;
+  --color-iris-200: #d9d3e7;
+  --color-iris-500: #7b86a8;
+  --color-iris-700: #555d77;
+  --color-clay-100: #f5e8e7;
+  --color-clay-400: #bc7a73;
+  --color-clay-500: #a08d87;
+  --color-clay-700: #8d5b5b;
+
+  /* Fonts, bundled by next/font (src/app/fonts.ts) */
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-display: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+
+  /* Public site shadows */
+  --shadow-cta: 0 12px 30px color-mix(in oklab, var(--color-coral-500) 24%, transparent);
+  --shadow-hero: 0 40px 100px color-mix(in oklab, var(--color-forest-950) 42%, transparent);
+  --shadow-panel: 0 20px 70px color-mix(in oklab, var(--color-forest-900) 8%, transparent);
+  --shadow-card: 0 14px 50px color-mix(in oklab, var(--color-forest-900) 7%, transparent);
+  --shadow-card-raised: 0 24px 70px color-mix(in oklab, var(--color-forest-900) 13%, transparent);
+}

@@ -1,4 +1,4 @@
-# ShelterWalk: shelter dog walking app
+# The Good Walk: shelter dog walking app
 
 One Next.js app with a public booking site, a staff dashboard and a content manager (Payload CMS), all on the same database.
 
@@ -97,6 +97,6 @@ This can't be undone, so back up `shelter.db`, `media` and `.env` first if you m
 | `deploy.cmd: Git Bash was not found` | Install [Git for Windows](https://git-scm.com/download/win), open a new terminal and run `.\deploy.cmd` again. |
 | `this Windows folder was opened through WSL` | Same cause as the WSL error above: run `.\deploy.cmd` in PowerShell or Command Prompt, or `bash deploy.sh` in Git Bash. |
 | `$'\r': command not found` | `deploy.sh` has Windows line endings. Fix the file once with `sed -i 's/\r$//' deploy.sh`. `.gitattributes` keeps it correct in future checkouts. |
-| `could not delete …` or `ShelterWalk is still running` during `--teardown` | The app is still running. Stop it with `Ctrl + C` in its terminal and run the teardown again; it carries on with what is left. |
+| `could not delete …` or `The Good Walk is still running` during `--teardown` | The app is still running. Stop it with `Ctrl + C` in its terminal and run the teardown again; it carries on with what is left. |
 | `could not download Node.js` | Check the internet connection (and proxy, if you use one) and run `deploy.sh` again. |
 | Anything else | Delete `.venv` and `node_modules` and run the deploy command again for a clean install. For app errors, see the troubleshooting section of [MANUAL_INSTALL.md](MANUAL_INSTALL.md#5-troubleshooting). |

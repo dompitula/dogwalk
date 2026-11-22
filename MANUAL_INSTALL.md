@@ -1,6 +1,6 @@
-# ShelterWalk: manual installation
+# The Good Walk: manual installation
 
-These are the steps to install and run ShelterWalk by hand, with your own Node.js and pnpm. Use them if you want to work on the code (`pnpm dev` reloads the app on every change) or cannot use [`deploy.sh`](README.md), which does all of this for you.
+These are the steps to install and run The Good Walk by hand, with your own Node.js and pnpm. Use them if you want to work on the code (`pnpm dev` reloads the app on every change) or cannot use [`deploy.sh`](README.md), which does all of this for you.
 
 The app contains three parts, all using the same database:
 
@@ -112,7 +112,7 @@ The client site (Next.js 16 + Payload CMS 4 beta) is the base. The admin site wa
   - Walk slots: `route` (approved walking route), `handlingNotes`
   - Bookings: two new statuses, `checked-out` and `returned`
 - **Safety rules.** A walk that has a booking cannot be deleted until its booking is deleted (the dashboard does both for you, after asking). Deleting a booking reopens its walk for public booking (unless the walk itself was cancelled). Signed-in staff can add more staff accounts in `/admin`.
-- **Adjusted from the original admin design:** "Schedule a walk" creates an open walk (the volunteer is whoever books it); volunteer cards show contact details and walk counts instead of made-up ratings; Settings keeps the default walk duration (saved in the browser) and links to the content manager, the public site and sign out. The two notification switches were removed because nothing in the app sends notifications.
+- **Adjusted from the original admin design:** "Schedule a walk" creates an open walk (the volunteer is whoever books it); volunteer cards show contact details and walk counts instead of made-up ratings; Settings keeps the default walk duration (saved in the browser) and links to the content manager, the public site and sign out. The two notification switches were replaced by **Email settings** (`/dashboard/email`, linked from Settings), where staff turn the booking emails on and set the sender.
 
 ## 7. Project structure
 
@@ -121,14 +121,31 @@ src/
   app/
     (frontend)/      public booking site            → /
     (dashboard)/     staff dashboard + sign-in      → /dashboard, /dashboard/login
+      dashboard/       dashboard-app.tsx (layout and navigation), views/ (one file per view),
+                       dialogs/, use-dashboard.ts (data and actions), walk-view.ts (helpers),
+                       email/ (Email settings page → /dashboard/email)
     (payload)/       Payload CMS admin and API      → /admin, /api
-  collections/       data model (Dogs, Shelters, WalkSlots, Bookings, Admins, Media, …)
-  lib/walks.ts       walk statuses, routes and labels shared by the server and the dashboard
+    tokens.css       design tokens (colours, fonts, shadows) shared by both sites
+    fonts.ts         the fonts, bundled with the app by next/font
+  collections/       data model (Dogs, Shelters, WalkSlots, Bookings, Admins, Media)
+  globals/           Email settings, saved by the Email settings page
+  components/
+    icon.tsx         the icon set used by both sites
+    admin/           content manager additions: the dashboard links and the dog form fields
+  lib/
+    walks.ts         walk statuses, routes and labels shared by the server and the dashboard
+    booking-rules.ts what a booking must contain, checked by the booking form and the Bookings collection
+    brand.ts         the app's name
+    ids.ts           reads database IDs sent by the browser or held by relationships
+    dog-options.ts   the choices in the dog form (kennels, ages, temperaments, special care)
+    email/           booking emails, sent through Resend (RESEND_API_KEY in .env)
   seed/              sample data added to an empty database
-  payload.config.ts  Payload configuration (SQLite database, collections)
+  payload.config.ts  Payload configuration (SQLite database, collections, email)
 scripts/create-env.mjs  creates .env
 deploy.sh               one-step production deploy, and --teardown (see README.md)
 deploy.cmd              runs deploy.sh with Git Bash from PowerShell or Command Prompt
 ```
+
+Colours are design tokens: add or change them in `src/app/tokens.css`, never as a colour value in a component or stylesheet (Tailwind's default colours are switched off). The one exception is the HTML of the booking emails (`src/lib/email/booking-email.ts`): email clients do not support CSS variables.
 
 Other commands: `pnpm generate:types` regenerates `src/payload-types.ts`, `pnpm generate:importmap` regenerates the CMS import map, `pnpm format` formats the code.

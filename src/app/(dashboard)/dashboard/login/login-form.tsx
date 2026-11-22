@@ -1,27 +1,8 @@
 'use client'
 
 import { type FormEvent, useState } from 'react'
-
-function PawIcon() {
-  return (
-    <svg
-      width="25"
-      height="25"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M10 5.5C8.5 3 5.5 2.5 4 4c-1.5 1.5-.5 4.5 2 5.5" />
-      <path d="M14 5.5C15.5 3 18.5 2.5 20 4c1.5 1.5.5 4.5-2 5.5" />
-      <path d="M6 10c0 7 2.7 11 6 11s6-4 6-11c-1.8-2-3.8-3-6-3s-4.2 1-6 3Z" />
-      <path d="M9.5 13h.01M14.5 13h.01M10 17c1.2 1 2.8 1 4 0" />
-    </svg>
-  )
-}
+import { Icon } from '@/components/icon'
+import { BRAND_NAME } from '@/lib/brand'
 
 export function LoginForm({ hasStaffAccount }: { hasStaffAccount: boolean }) {
   const [error, setError] = useState('')
@@ -62,9 +43,9 @@ export function LoginForm({ hasStaffAccount }: { hasStaffAccount: boolean }) {
       <div className="login-card">
         <div className="brand login-brand">
           <span className="brand-mark">
-            <PawIcon />
+            <Icon name="paw" size={25} />
           </span>
-          <span>ShelterWalk</span>
+          <span>{BRAND_NAME}</span>
         </div>
         <p className="eyebrow">Shelter staff</p>
         <h1>Sign in to the dashboard</h1>

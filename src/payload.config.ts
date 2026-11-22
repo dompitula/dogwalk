@@ -1,20 +1,17 @@
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { buildConfig } from 'payload'
-import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { mcpPlugin } from '@payloadcms/plugin-mcp'
 import { en as adminLanguage } from '@payloadcms/translations/languages/en'
 import { payloadResendAdapter } from './lib/email/payload-adapter'
 import { EmailSettings } from './globals/EmailSettings'
 import { Admins } from './collections/Admins'
 import { Media } from './collections/Media'
-import { Folders } from './collections/Folders'
-import { Tags } from './collections/Tags'
 import { Shelters } from './collections/Shelters'
 import { Dogs } from './collections/Dogs'
 import { WalkSlots } from './collections/WalkSlots'
 import { Bookings } from './collections/Bookings'
+import { sqliteDatabase } from './lib/database'
 import { seedStarterData } from './seed/index'
 
 const filename = fileURLToPath(import.meta.url)
@@ -46,7 +43,7 @@ export default buildConfig({
     supportedLanguages: { en: adminLanguage },
   },
   globals: [EmailSettings],
-  collections: [Admins, Media, Folders, Tags, Shelters, Dogs, WalkSlots, Bookings],
+  collections: [Admins, Media, Shelters, Dogs, WalkSlots, Bookings],
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
@@ -55,16 +52,11 @@ export default buildConfig({
     fallback: true,
     defaultLocale: 'en',
   },
-  plugins: [mcpPlugin({})],
   editor: lexicalEditor(),
   // Set PAYLOAD_SECRET in .env (see .env.example). Payload refuses to start without it.
   secret: process.env.PAYLOAD_SECRET || '',
   // Local SQLite database file. The tables are created automatically by `pnpm dev`.
-  db: sqliteAdapter({
-    client: {
-      url: process.env.DATABASE_URL || 'file:./shelter.db',
-    },
-  }),
+  db: sqliteDatabase(process.env.DATABASE_URL || 'file:./shelter.db'),
   // Fills an empty database with a sample shelter, dogs, walk times and three demo bookings,
   // unless SAMPLE_DATA=false (deploy.sh --clean). See src/seed/index.ts.
   onInit: async (payload) => {

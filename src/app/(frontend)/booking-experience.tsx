@@ -2,6 +2,8 @@
 
 import Image from 'next/image'
 import { type FormEvent, startTransition, useActionState, useMemo, useState } from 'react'
+import { Icon } from '@/components/icon'
+import { BOOKING_LIMITS, EXPERIENCE_OPTIONS } from '@/lib/booking-rules'
 import { useModalDialog } from '@/lib/use-modal-dialog'
 import { createBooking, type BookingResult } from './actions'
 
@@ -27,59 +29,6 @@ export type WalkOption = {
 }
 
 const initialState: BookingResult = { success: false, message: '' }
-
-function Icon({
-  name,
-  className = 'h-5 w-5',
-}: {
-  name: 'arrow' | 'calendar' | 'check' | 'clock' | 'map' | 'paw' | 'spark'
-  className?: string
-}) {
-  const paths = {
-    arrow: <path d="M5 12h14m-5-5 5 5-5 5" />,
-    calendar: <path d="M7 3v3m10-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13H4V6a1 1 0 0 1 1-1Z" />,
-    check: <path d="m5 12 4 4L19 6" />,
-    clock: (
-      <>
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 7v5l3 2" />
-      </>
-    ),
-    map: (
-      <>
-        <path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3Z" />
-        <path d="M9 3v15m6-12v15" />
-      </>
-    ),
-    paw: (
-      <>
-        <circle cx="12" cy="15" r="4" />
-        <circle cx="6.5" cy="10" r="2" />
-        <circle cx="10" cy="6" r="2" />
-        <circle cx="14.5" cy="6.5" r="2" />
-        <circle cx="18" cy="10.5" r="2" />
-      </>
-    ),
-    spark: (
-      <path d="m12 2 1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5L12 2Zm7 13 .7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7L19 15Z" />
-    ),
-  }
-
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {paths[name]}
-    </svg>
-  )
-}
 
 const formatDay = (date: string) =>
   new Intl.DateTimeFormat('en', { weekday: 'short', month: 'short', day: 'numeric' }).format(
@@ -120,25 +69,92 @@ export function BookingExperience({ walks }: { walks: WalkOption[] }) {
   )
 
   if (state.success) {
-    const requestedWalk = walks.find(walk => walk.id === state.slot) ?? selected
+    const requestedWalk = walks.find((walk) => walk.id === state.slot) ?? selected
     return (
-      <section id="walks" aria-labelledby="request-heading" className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-20">
-        <div className="mx-auto max-w-3xl overflow-hidden rounded-3xl border border-[#dfe7dd] bg-white shadow-[0_12px_48px_rgba(31,66,44,.06)]">
-          <div className="border-b border-[#e5ebe1] bg-[#f3f7ef] px-6 py-8 sm:px-10">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#d8e4d2] bg-white px-3 py-1.5 text-xs font-semibold text-[#356044]"><Icon name="check" className="h-3.5 w-3.5" /> Request received</div>
-            <h2 id="request-heading" className="font-serif text-3xl leading-tight text-[#173f2b] sm:text-4xl">Thanks{state.firstName ? ', ' + state.firstName : ''}. You are on the list.</h2>
-            <p className="mt-3 max-w-lg text-sm leading-6 text-[#657665]">Your request is saved. The shelter will get in touch to approve your walk and share arrival details.</p>
+      <section
+        id="walks"
+        aria-labelledby="request-heading"
+        className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-20"
+      >
+        <div className="mx-auto max-w-3xl overflow-hidden rounded-3xl border border-sage-300 bg-white shadow-card">
+          <div className="border-b border-sage-200 bg-sage-100 px-6 py-8 sm:px-10">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-forest-200 bg-white px-3 py-1.5 text-xs font-semibold text-forest-700">
+              <Icon name="check" size={14} /> Request received
+            </div>
+            <h2
+              id="request-heading"
+              className="font-serif text-3xl leading-tight text-forest-900 sm:text-4xl"
+            >
+              Thanks{state.firstName ? ', ' + state.firstName : ''}. You are on the list.
+            </h2>
+            <p className="mt-3 max-w-lg text-sm leading-6 text-moss-500">
+              Your request is saved. The shelter will get in touch to approve your walk and share
+              arrival details.
+            </p>
           </div>
           <div className="px-6 py-7 sm:px-10">
-            {requestedWalk && <div className="flex items-center gap-4 rounded-2xl border border-[#e6eadd] bg-[#fafbf7] p-4">
-              <Image src={requestedWalk.dog.photo.url} alt={requestedWalk.dog.photo.alt} width={80} height={80} className="h-20 w-20 shrink-0 rounded-xl object-cover" />
-              <div className="min-w-0"><p className="text-xs text-[#798773]">Your walking companion</p><h3 className="mt-0.5 text-lg font-semibold text-[#244a33]">{requestedWalk.dog.name}</h3><p className="mt-1 text-xs leading-5 text-[#647460]">{formatDay(requestedWalk.startsAt)} &middot; {formatTime(requestedWalk.startsAt)} &middot; {requestedWalk.durationMinutes} min</p><p className="text-xs leading-5 text-[#647460]">{requestedWalk.shelter.name}</p></div>
-            </div>}
+            {requestedWalk && (
+              <div className="flex items-center gap-4 rounded-2xl border border-sage-200 bg-sand-50 p-4">
+                <Image
+                  src={requestedWalk.dog.photo.url}
+                  alt={requestedWalk.dog.photo.alt}
+                  width={80}
+                  height={80}
+                  className="h-20 w-20 shrink-0 rounded-xl object-cover"
+                />
+                <div className="min-w-0">
+                  <p className="text-xs text-moss-500">Your walking companion</p>
+                  <h3 className="mt-0.5 text-lg font-semibold text-forest-900">
+                    {requestedWalk.dog.name}
+                  </h3>
+                  <p className="mt-1 text-xs leading-5 text-moss-500">
+                    {formatDay(requestedWalk.startsAt)} &middot;{' '}
+                    {formatTime(requestedWalk.startsAt)} &middot; {requestedWalk.durationMinutes}{' '}
+                    min
+                  </p>
+                  <p className="text-xs leading-5 text-moss-500">{requestedWalk.shelter.name}</p>
+                </div>
+              </div>
+            )}
             <div className="mt-7 grid gap-6 sm:grid-cols-2" role="status">
-              <div className="flex gap-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#eef3e8] text-xs font-bold text-[#42653b]">1</span><div><h3 className="text-sm font-semibold text-[#254b34]">{state.emailSent ? 'Check your inbox' : 'Your request is safe'}</h3><p className="mt-1 text-xs leading-5 text-[#76816f]">{state.emailSent ? 'We sent a receipt for your request. Check your spam folder too.' : 'The email could not be sent, but your request is saved. There is no need to book again.'}</p></div></div>
-              <div className="flex gap-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#eef3e8] text-xs font-bold text-[#42653b]">2</span><div><h3 className="text-sm font-semibold text-[#254b34]">Wait for the shelter</h3><p className="mt-1 text-xs leading-5 text-[#76816f]">Your walk is awaiting approval. The team will contact you to confirm.</p></div></div>
+              <div className="flex gap-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-forest-100 text-xs font-bold text-forest-700">
+                  1
+                </span>
+                <div>
+                  <h3 className="text-sm font-semibold text-forest-900">
+                    {state.emailSent ? 'Check your inbox' : 'Your request is safe'}
+                  </h3>
+                  <p className="mt-1 text-xs leading-5 text-moss-500">
+                    {state.emailSent
+                      ? 'We sent a receipt for your request. Check your spam folder too.'
+                      : 'The email could not be sent, but your request is saved. There is no need to book again.'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-forest-100 text-xs font-bold text-forest-700">
+                  2
+                </span>
+                <div>
+                  <h3 className="text-sm font-semibold text-forest-900">Wait for the shelter</h3>
+                  <p className="mt-1 text-xs leading-5 text-moss-500">
+                    Your walk is awaiting approval. The team will contact you to confirm.
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-[#e9ede3] pt-6"><span className="inline-flex items-center gap-2 text-xs text-[#7c8067]"><span className="h-1.5 w-1.5 rounded-full bg-[#b29753]" /> Awaiting shelter approval</span><a href="#top" className="inline-flex items-center gap-2 rounded-full bg-[#173f2b] px-5 py-3 text-xs font-semibold text-white transition hover:bg-[#28583d]">Back to home <Icon name="arrow" className="h-4 w-4" /></a></div>
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-sage-200 pt-6">
+              <span className="inline-flex items-center gap-2 text-xs text-moss-500">
+                <span className="h-1.5 w-1.5 rounded-full bg-gold-500" /> Awaiting shelter approval
+              </span>
+              <a
+                href="#top"
+                className="inline-flex items-center gap-2 rounded-full bg-forest-900 px-5 py-3 text-xs font-semibold text-white transition hover:bg-forest-800"
+              >
+                Back to home <Icon name="arrow" size={16} />
+              </a>
+            </div>
           </div>
         </div>
       </section>
@@ -151,10 +167,10 @@ export function BookingExperience({ walks }: { walks: WalkOption[] }) {
         <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
           <div>
             <p className="eyebrow">Dogs ready for a stroll</p>
-            <h2 className="mt-3 max-w-2xl font-serif text-4xl leading-[1.05] text-[#173f2b] sm:text-5xl">
+            <h2 className="mt-3 max-w-2xl font-serif text-4xl leading-[1.05] text-forest-900 sm:text-5xl">
               Pick your walking companion.
             </h2>
-            <p className="mt-4 max-w-xl text-base leading-7 text-[#627568]">
+            <p className="mt-4 max-w-xl text-base leading-7 text-moss-500">
               Every walk gives a shelter dog fresh air, practice, and a better chance of meeting
               their person.
             </p>
@@ -186,9 +202,9 @@ export function BookingExperience({ walks }: { walks: WalkOption[] }) {
             {filtered.map((walk) => (
               <article
                 key={walk.id}
-                className="group overflow-hidden rounded-[1.75rem] border border-[#e1e8e2] bg-white shadow-[0_14px_50px_rgba(30,62,43,.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(30,62,43,.13)]"
+                className="group overflow-hidden rounded-[1.75rem] border border-sage-200 bg-white shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-card-raised"
               >
-                <div className="relative aspect-[4/3] overflow-hidden bg-[#e9efe9]">
+                <div className="relative aspect-[4/3] overflow-hidden bg-forest-100">
                   <Image
                     src={walk.dog.photo.url}
                     alt={walk.dog.photo.alt}
@@ -196,59 +212,61 @@ export function BookingExperience({ walks }: { walks: WalkOption[] }) {
                     className="object-cover transition duration-500 group-hover:scale-[1.03]"
                     sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
                   />
-                  <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-xs font-bold text-[#205c3b] shadow-sm backdrop-blur">
+                  <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-xs font-bold text-forest-800 shadow-sm backdrop-blur">
                     {walk.dog.energy === 'high'
                       ? 'High energy'
                       : walk.dog.energy[0].toUpperCase() + walk.dog.energy.slice(1)}
                   </span>
-                  <span className="absolute bottom-4 right-4 flex items-center gap-1.5 rounded-full bg-[#173f2b] px-3 py-1.5 text-xs font-bold text-white">
-                    <Icon name="paw" className="h-3.5 w-3.5" /> {walk.dog.size}
+                  <span className="absolute bottom-4 right-4 flex items-center gap-1.5 rounded-full bg-forest-900 px-3 py-1.5 text-xs font-bold text-white">
+                    <Icon name="paw" size={14} /> {walk.dog.size}
                   </span>
                 </div>
                 <div className="p-6">
-                  <h3 className="font-serif text-3xl text-[#173f2b]">{walk.dog.name}</h3>
-                  <p className="mt-1 text-sm font-medium text-[#738278]">
+                  <h3 className="font-serif text-3xl text-forest-900">{walk.dog.name}</h3>
+                  <p className="mt-1 text-sm font-medium text-moss-500">
                     {walk.dog.ageLabel} · {walk.dog.breed}
                   </p>
-                  <p className="mt-4 line-clamp-2 min-h-12 text-sm leading-6 text-[#576b5e]">
+                  <p className="mt-4 line-clamp-2 min-h-12 text-sm leading-6 text-moss-600">
                     {walk.dog.bio}
                   </p>
                   <div className="mt-5 flex flex-wrap gap-2">
                     {walk.dog.traits.slice(0, 3).map((trait) => (
                       <span
                         key={trait}
-                        className="rounded-full bg-[#f3f6f3] px-2.5 py-1 text-[11px] font-bold text-[#557060]"
+                        className="rounded-full bg-sage-100 px-2.5 py-1 text-[11px] font-bold text-moss-600"
                       >
                         {trait}
                       </span>
                     ))}
                   </div>
-                  <div className="mt-6 border-t border-[#edf0ed] pt-5">
-                    <div className="flex items-center gap-2 text-sm font-bold text-[#294c37]">
-                      <Icon name="calendar" className="h-4 w-4 text-[#db5d3f]" />
+                  <div className="mt-6 border-t border-sand-100 pt-5">
+                    <div className="flex items-center gap-2 text-sm font-bold text-pine-800">
+                      <Icon name="calendar" size={16} className="text-coral-500" />
                       {formatDay(walk.startsAt)} at {formatTime(walk.startsAt)}
                     </div>
-                    <div className="mt-2 flex items-center gap-2 text-xs text-[#75847a]">
-                      <Icon name="map" className="h-4 w-4" />
+                    <div className="mt-2 flex items-center gap-2 text-xs text-moss-500">
+                      <Icon name="map" size={16} />
                       {walk.shelter.name} · {walk.shelter.neighborhood}
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setSelected(walk)}
-                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-[#173f2b] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#db5d3f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#173f2b]"
+                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-forest-900 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-coral-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest-900"
                   >
-                    Book this walk <Icon name="arrow" className="h-4 w-4" />
+                    Book this walk <Icon name="arrow" size={16} />
                   </button>
                 </div>
               </article>
             ))}
           </div>
         ) : (
-          <div className="mt-10 rounded-[1.75rem] border border-dashed border-[#cdd9cf] bg-[#f7faf7] px-6 py-16 text-center">
-            <Icon name="paw" className="mx-auto h-9 w-9 text-[#db5d3f]" />
-            <h3 className="mt-4 font-serif text-2xl text-[#173f2b]">No matching walks right now</h3>
-            <p className="mt-2 text-sm text-[#6b7d70]">
+          <div className="mt-10 rounded-[1.75rem] border border-dashed border-sage-400 bg-sage-50 px-6 py-16 text-center">
+            <Icon name="paw" size={36} className="mx-auto text-coral-500" />
+            <h3 className="mt-4 font-serif text-2xl text-forest-900">
+              No matching walks right now
+            </h3>
+            <p className="mt-2 text-sm text-moss-500">
               Try another filter or check back soon for newly added times.
             </p>
           </div>
@@ -257,7 +275,7 @@ export function BookingExperience({ walks }: { walks: WalkOption[] }) {
 
       {selected && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-[#102b1d]/55 p-0 backdrop-blur-sm sm:items-center sm:p-5"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-forest-950/55 p-0 backdrop-blur-sm sm:items-center sm:p-5"
           role="dialog"
           aria-modal="true"
           aria-labelledby="booking-title"
@@ -265,26 +283,26 @@ export function BookingExperience({ walks }: { walks: WalkOption[] }) {
           <div
             ref={dialogRef}
             tabIndex={-1}
-            className="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-t-[2rem] bg-[#fffdfa] shadow-2xl outline-none sm:rounded-[2rem]"
+            className="max-h-[95vh] w-full max-w-2xl overflow-y-auto rounded-t-[2rem] bg-cream shadow-2xl outline-none sm:rounded-[2rem]"
           >
-            <div className="flex items-start justify-between border-b border-[#e8ede8] px-6 py-5 sm:px-8">
+            <div className="flex items-start justify-between border-b border-sage-200 px-6 py-5 sm:px-8">
               <div>
                 <p className="eyebrow">One last step</p>
-                <h2 id="booking-title" className="mt-1 font-serif text-3xl text-[#173f2b]">
+                <h2 id="booking-title" className="mt-1 font-serif text-3xl text-forest-900">
                   Walk with {selected.dog.name}
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setSelected(null)}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#edf3ee] text-xl text-[#274d36]"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-sage-100 text-xl text-pine-800"
                 aria-label="Close booking form"
               >
                 ×
               </button>
             </div>
             <div className="grid gap-0 md:grid-cols-[.8fr_1.2fr]">
-              <div className="bg-[#f0f6f1] p-6 sm:p-8">
+              <div className="bg-sage-100 p-6 sm:p-8">
                 <div className="relative aspect-square overflow-hidden rounded-2xl">
                   <Image
                     src={selected.dog.photo.url}
@@ -294,20 +312,20 @@ export function BookingExperience({ walks }: { walks: WalkOption[] }) {
                     sizes="280px"
                   />
                 </div>
-                <div className="mt-5 space-y-3 text-sm text-[#45604e]">
+                <div className="mt-5 space-y-3 text-sm text-moss-700">
                   <p className="flex gap-2">
-                    <Icon name="calendar" className="h-5 w-5 text-[#db5d3f]" />{' '}
+                    <Icon name="calendar" className="shrink-0 text-coral-500" />{' '}
                     <span>
-                      <strong className="block text-[#173f2b]">
+                      <strong className="block text-forest-900">
                         {formatDay(selected.startsAt)}
                       </strong>
                       {formatTime(selected.startsAt)} · {selected.durationMinutes} min
                     </span>
                   </p>
                   <p className="flex gap-2">
-                    <Icon name="map" className="h-5 w-5 text-[#db5d3f]" />{' '}
+                    <Icon name="map" className="shrink-0 text-coral-500" />{' '}
                     <span>
-                      <strong className="block text-[#173f2b]">{selected.shelter.name}</strong>
+                      <strong className="block text-forest-900">{selected.shelter.name}</strong>
                       {selected.shelter.address}
                     </span>
                   </p>
@@ -345,9 +363,11 @@ export function BookingExperience({ walks }: { walks: WalkOption[] }) {
                     <option value="" disabled>
                       Select one
                     </option>
-                    <option value="first-time">This is my first time</option>
-                    <option value="some">I have some experience</option>
-                    <option value="experienced">I’m an experienced walker</option>
+                    {EXPERIENCE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.visitorLabel}
+                      </option>
+                    ))}
                   </select>
                   {result?.errors?.experience && <small>{result.errors.experience}</small>}
                 </label>
@@ -358,7 +378,7 @@ export function BookingExperience({ walks }: { walks: WalkOption[] }) {
                   <textarea
                     name="notes"
                     rows={3}
-                    maxLength={500}
+                    maxLength={BOOKING_LIMITS.notes.max}
                     defaultValue={values?.notes}
                     placeholder="Accessibility needs, questions, or a note for the team"
                   />
@@ -366,19 +386,19 @@ export function BookingExperience({ walks }: { walks: WalkOption[] }) {
                 {result?.message && (
                   <p
                     role="alert"
-                    className="rounded-xl bg-[#fff0ea] px-4 py-3 text-sm font-medium text-[#9f3f2a]"
+                    className="rounded-xl bg-coral-50 px-4 py-3 text-sm font-medium text-coral-800"
                   >
                     {result.message}
                   </p>
                 )}
                 <button
                   disabled={pending}
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-[#db5d3f] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#c84e32] disabled:cursor-wait disabled:opacity-60"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-coral-500 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-coral-600 disabled:cursor-wait disabled:opacity-60"
                 >
                   {pending ? 'Reserving your walk…' : 'Confirm walk'}{' '}
-                  <Icon name="check" className="h-4 w-4" />
+                  <Icon name="check" size={16} />
                 </button>
-                <p className="text-center text-[11px] leading-5 text-[#7a887e]">
+                <p className="text-center text-[11px] leading-5 text-moss-500">
                   The shelter will contact you to confirm the walk and arrival details. Please bring
                   a photo ID.
                 </p>

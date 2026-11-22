@@ -1,8 +1,10 @@
 'use server'
 
+import { toID } from '@/lib/ids'
 import { getStaffSession } from '@/lib/staff-auth'
 import {
   BOOKING_STATUS_FOR_WALK_STATUS,
+  HANDLING_NOTES_MAX,
   WALK_DURATIONS,
   WALK_ROUTES,
   WALK_STATUSES,
@@ -19,14 +21,6 @@ const SIGNED_OUT: ActionResult = {
   message: 'Your session has expired. Please sign in again.',
   signedOut: true,
 }
-
-/** SQLite uses numeric IDs; the browser sends them back as strings. `null` if it is not an ID. */
-const toID = (value: unknown): number | null =>
-  typeof value === 'string' && /^\d+$/.test(value.trim()) ? Number(value) : null
-
-/** A relationship field holds the related ID, or the related document when populated. */
-const relationID = (value: number | { id: number }) =>
-  typeof value === 'object' ? value.id : value
 
 const failure = (error: unknown, fallback: string): ActionResult => ({
   ok: false,
@@ -54,8 +48,11 @@ export async function createWalk(input: CreateWalkInput): Promise<ActionResult> 
   if (route && !WALK_ROUTES.some((item) => item.value === route)) {
     return { ok: false, message: 'Choose one of the approved routes.' }
   }
-  if (handlingNotes.length > 500) {
-    return { ok: false, message: 'Keep handling notes under 500 characters.' }
+  if (handlingNotes.length > HANDLING_NOTES_MAX) {
+    return {
+      ok: false,
+      message: `Keep handling notes under ${HANDLING_NOTES_MAX} characters.`,
+    }
   }
 
   let dog
@@ -77,6 +74,13 @@ export async function createWalk(input: CreateWalkInput): Promise<ActionResult> 
       message: `${dog.name} is not listed on the public site. Mark the dog as active in the content manager first.`,
     }
   }
+  const shelterID = toID(dog.shelter)
+  if (shelterID === null) {
+    return {
+      ok: false,
+      message: `${dog.name} has no shelter. Choose one in the content manager first.`,
+    }
+  }
 
   const when = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(localLabel)
     ? localLabel
@@ -90,7 +94,7 @@ export async function createWalk(input: CreateWalkInput): Promise<ActionResult> 
       data: {
         label: `${dog.name} · ${when}`,
         dog: dog.id,
-        shelter: relationID(dog.shelter),
+        shelter: shelterID,
         startsAt: startsAt.toISOString(),
         durationMinutes,
         route: route ? (route as WalkRouteValue) : undefined,

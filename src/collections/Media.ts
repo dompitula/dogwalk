@@ -1,8 +1,6 @@
 import path from 'path'
 import type { CollectionConfig } from 'payload'
 
-import { createFolderField, createTagField } from 'payload'
-
 export const Media: CollectionConfig = {
   slug: 'media',
   access: {
@@ -14,8 +12,6 @@ export const Media: CollectionConfig = {
       type: 'text',
       required: true,
     },
-    createFolderField({ relationTo: 'folders' }),
-    createTagField({ relationTo: 'tags' }),
   ],
   upload: {
     // Uploaded files are stored on disk in the `media` folder of the project.
