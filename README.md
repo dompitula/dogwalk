@@ -1,8 +1,10 @@
 # The Good Walk: shelter dog walking app
 
+[![CI](https://github.com/dompitula/dogwalk/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dompitula/dogwalk/actions/workflows/ci.yml)
+
 One Next.js app with a public booking site, a staff dashboard and a content manager (Payload CMS), all on the same database.
 
-`deploy.sh` installs and starts the whole app with one command. To install it step by step instead, or to work on the code with `pnpm dev`, see **[MANUAL_INSTALL.md](MANUAL_INSTALL.md)**. That file also covers the sample data, the walk flow, troubleshooting and the project structure.
+`deploy.sh` installs and starts the whole app with one command. To install it step by step instead, or to work on the code with `pnpm dev`, see **[MANUAL_INSTALL.md](MANUAL_INSTALL.md)**. That file also covers the sample data, the walk flow, troubleshooting and the project structure. Developers: the tests, lint and CI are described in [section 6 of MANUAL_INSTALL.md](MANUAL_INSTALL.md#6-tests-lint-and-ci).
 
 ---
 

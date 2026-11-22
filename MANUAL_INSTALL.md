@@ -101,7 +101,52 @@ Dog photos are downloaded from Unsplash; without internet the app uses the "Phot
 | The public site says "No matching walks right now" | All sample walks are booked, cancelled or in the past. Schedule new walks in the dashboard, or reset the database (section 4). |
 | After changing a collection's fields, the terminal asks whether to apply database changes | That is Payload updating the local database. Read the question and answer in the terminal. |
 
-## 6. What was merged and changed
+## 6. Tests, lint and CI
+
+Run these in the project folder, after `pnpm install`:
+
+| Command | What it does |
+| --- | --- |
+| `pnpm format` | Formats the code with oxfmt. |
+| `pnpm format:check` | Checks the formatting without changing any file. Markdown and the generated files (`src/payload-types.ts`, the import map) are left as they are. |
+| `pnpm lint` | Checks the code with oxlint, with the rules in `.oxlintrc.json`. Every rule is either an error or off, and the file says why each rule that is off is off. |
+| `pnpm lint:fix` | Fixes what oxlint can fix by itself. |
+| `pnpm typecheck` | Generates the route types (`next typegen`) and checks the types of the app and the tests. |
+| `pnpm test` | Runs the unit tests and the integration tests. |
+| `pnpm test:unit` | Unit tests only (`tests/unit`): no database and no network. They take about a second. |
+| `pnpm test:integration` | Integration tests only (`tests/integration`): the real app (Payload's Local API and the server actions) on a throwaway database. They take about 15 seconds. |
+| `pnpm test:watch` | Runs the tests again on every change. |
+| `pnpm check` | Format check, lint, type check and tests: everything CI checks except the build and the deploy. Run it before you push. |
+
+`pnpm test:coverage` also writes a coverage report to `coverage/`. Coverage is not checked.
+
+**The tests leave your data alone.** They need no `.env` and never open `shelter.db` or the `media` folder: each integration test file gets its own database and photo folder in `.tmp-tests/`, which the next test run deletes. No test sends email or reaches the internet. A test that tries to fails.
+
+On Windows, running a single test file (for example `pnpm vitest run bookings`) fails with "Vitest failed to find the current suite" when the terminal's folder starts with a lowercase drive letter (`c:\…`), which VS Code terminals sometimes do. Change to the same folder written with a capital letter (`cd C:\…`) and run it again. `pnpm test` is not affected.
+
+### What CI checks
+
+Every pull request, and every push to `main`, runs the workflow in `.github/workflows/ci.yml`. It uses the Node.js version from `.mise.toml` and the pnpm version from `package.json`, the same ones `deploy.sh` installs.
+
+| Check | What it does |
+| --- | --- |
+| Format, lint, types, build | `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, shellcheck on `deploy.sh`, and `pnpm build`. Then it checks that the build really finished, and that `src/payload-types.ts` and the import map are committed as the build generates them. |
+| Tests (ubuntu-latest), Tests (windows-latest) | The unit and integration tests, on Linux and on Windows. |
+| out_of_box (ubuntu-latest), out_of_box (windows-latest) | What a new user gets: `deploy.sh` (`deploy.cmd` on Windows) from a clean checkout, without caches. When the app answers, it checks the public site, the dashboard sign-in, the content manager and the API, then stops the app, runs `--teardown --yes` and checks that everything was removed. The script is `scripts/ci/out_of_box.mjs`. |
+| CI result | Passes only when all the checks above passed. |
+
+A pull request can only be merged into `main` once **CI result** passes.
+
+When a check fails, open it from the pull request's **Checks** tab. The output of the failing step says why, and lint errors and failed tests are also shown on the lines they concern, under **Files changed**. A failed out_of_box run attaches the whole deploy output: download the `out_of_box-log-ubuntu-latest` or `out_of_box-log-windows-latest` artifact from the run's summary page, which also shows the table of checks.
+
+Two failures that are not about your change:
+
+- **A security advisory for Next.js.** When Next.js publishes an advisory for the version in `package.json`, `next build` stops without building and prints `Upgrade: Next.js … → 16.x.y` (see "the build did not finish" in the [README's troubleshooting](README.md#troubleshooting)). CI then fails on every pull request until `next` is updated to that version. This is on purpose: it keeps a known vulnerable Next.js from being shipped.
+- **Generated files out of date.** After changing a collection or an admin component, run `pnpm build` (or `pnpm generate:types` and `pnpm generate:importmap`) and commit `src/payload-types.ts` and `src/app/(payload)/admin/importMap.js`.
+
+The out_of_box script ends with `--teardown --yes`, which deletes the database, `media` and `.env`, so it refuses to run outside CI. To run it on your computer, use a throwaway clone: `git clone . ../good-walk-test`, then `node scripts/ci/out_of_box.mjs --allow-teardown` in that folder.
+
+## 7. What was merged and changed
 
 The client site (Next.js 16 + Payload CMS 4 beta) is the base. The admin site was a separate React/Vite app that kept made-up dogs and bookings in the browser; it now lives inside the same app at `/dashboard` and works on the real data.
 
@@ -114,7 +159,7 @@ The client site (Next.js 16 + Payload CMS 4 beta) is the base. The admin site wa
 - **Safety rules.** A walk that has a booking cannot be deleted until its booking is deleted (the dashboard does both for you, after asking). Deleting a booking reopens its walk for public booking (unless the walk itself was cancelled). Signed-in staff can add more staff accounts in `/admin`.
 - **Adjusted from the original admin design:** "Schedule a walk" creates an open walk (the volunteer is whoever books it); volunteer cards show contact details and walk counts instead of made-up ratings; Settings keeps the default walk duration (saved in the browser) and links to the content manager, the public site and sign out. The two notification switches were replaced by **Email settings** (`/dashboard/email`, linked from Settings), where staff turn the booking emails on and set the sender.
 
-## 7. Project structure
+## 8. Project structure
 
 ```
 src/
@@ -141,11 +186,19 @@ src/
     email/           booking emails, sent through Resend (RESEND_API_KEY in .env)
   seed/              sample data added to an empty database
   payload.config.ts  Payload configuration (SQLite database, collections, email)
-scripts/create-env.mjs  creates .env
+tests/
+  unit/              unit tests: no database, no network
+  integration/       integration tests on a throwaway database; setup.ts and helpers/ are the harness
+scripts/create-env.mjs     creates .env
+scripts/ci/out_of_box.mjs  CI's deploy test: deploys, checks the app, tears it down (section 6)
 deploy.sh               one-step production deploy, and --teardown (see README.md)
 deploy.cmd              runs deploy.sh with Git Bash from PowerShell or Command Prompt
+vitest.config.ts        the test projects: unit and integration
+.oxlintrc.json          the lint rules
+.github/workflows/ci.yml  the CI workflow (section 6)
+.github/actions/setup/  CI's setup of Node.js, pnpm and the dependencies
 ```
 
 Colours are design tokens: add or change them in `src/app/tokens.css`, never as a colour value in a component or stylesheet (Tailwind's default colours are switched off). The one exception is the HTML of the booking emails (`src/lib/email/booking-email.ts`): email clients do not support CSS variables.
 
-Other commands: `pnpm generate:types` regenerates `src/payload-types.ts`, `pnpm generate:importmap` regenerates the CMS import map, `pnpm format` formats the code.
+Other commands: `pnpm generate:types` regenerates `src/payload-types.ts`, and `pnpm generate:importmap` regenerates the CMS import map. Formatting, lint, the type check and the tests are in section 6.
