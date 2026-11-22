@@ -235,6 +235,7 @@ export default async function HomePage() {
             {BRAND_NAME}
           </div>
           <p>Helping local shelter dogs get more fresh air, one walk at a time.</p>
+          {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- /dashboard has its own root layout, so the browser loads it as a new page either way */}
           <a href="/dashboard" className="font-bold text-white/60 transition hover:text-white">
             Shelter login
           </a>

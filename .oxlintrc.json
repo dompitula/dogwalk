@@ -1,0 +1,31 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  // Listing plugins replaces oxlint's default set, so the defaults (typescript, unicorn, oxc) are listed too.
+  "plugins": ["typescript", "unicorn", "oxc", "import", "react", "nextjs", "jsx-a11y", "vitest"],
+  // Every rule is an error or off, never a warning: a pass or fail result is unambiguous.
+  "categories": { "correctness": "error", "suspicious": "error" },
+  "ignorePatterns": [
+    "src/payload-types.ts",
+    "src/app/(payload)/admin/importMap.js",
+    ".next/**",
+    ".venv/**",
+    ".tmp-*/**",
+    "media/**"
+  ],
+  "rules": {
+    // The app uses the automatic JSX runtime, so React does not have to be in scope.
+    "react/react-in-jsx-scope": "off",
+    // Stylesheets are imported for their side effects (the layouts and Payload's admin CSS).
+    "import/no-unassigned-import": ["error", { "allow": ["**/*.css", "@payloadcms/next/css"] }],
+    // The hits are conventions: `__filename` in ESM, and `globalThis.__goodWalkSeed`.
+    "eslint/no-underscore-dangle": "off",
+    // next.config.ts sets images.unoptimized on purpose: Payload serves dog photos as they are.
+    "nextjs/no-img-element": "off",
+    // Replacing role="dialog" or role="status" with <dialog> or <output> changes focus and
+    // styling behaviour. A follow-up (the a11y pass).
+    "jsx-a11y/prefer-tag-over-role": "off",
+    // The email toggle's label text sits one level deeper (label > span > strong) than the
+    // default depth of 2.
+    "jsx-a11y/label-has-associated-control": ["error", { "depth": 3 }]
+  }
+}

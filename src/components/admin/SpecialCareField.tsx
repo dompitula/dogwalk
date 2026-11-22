@@ -7,7 +7,7 @@ import { SPECIAL_CARE_OPTIONS } from '@/lib/dog-options'
 export function SpecialCareField({ field, path, readOnly }: SelectFieldClientProps) {
   const { value, setValue, showError, disabled } = useField<string[]>({ path })
   const id = useId()
-  const options = SPECIAL_CARE_OPTIONS.map((value) => ({ label: value, value }))
+  const options = SPECIAL_CARE_OPTIONS.map((option) => ({ label: option, value: option }))
   return (
     <div className={'field-type select select--has-many' + (showError ? ' error' : '')}>
       <FieldLabel htmlFor={id} label={field.label} required={field.required} />
@@ -23,7 +23,7 @@ export function SpecialCareField({ field, path, readOnly }: SelectFieldClientPro
         isClearable
         isSearchable
         options={options}
-        value={(value || []).map((value) => ({ label: value, value }))}
+        value={(value || []).map((selected) => ({ label: selected, value: selected }))}
         onChange={(selection) =>
           setValue(Array.isArray(selection) ? selection.map((option) => option.value) : [])
         }

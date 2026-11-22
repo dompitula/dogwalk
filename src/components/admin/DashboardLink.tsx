@@ -9,9 +9,11 @@
 export function DashboardLink() {
   return (
     <div className="nav__link-wrapper" style={{ marginBottom: 'calc(var(--base, 20px) * 0.75)' }}>
+      {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- /dashboard has its own root layout, so the browser loads it as a new page either way */}
       <a className="nav__link" href="/dashboard" id="nav-staff-dashboard">
         <span className="nav__link-label">← Staff dashboard</span>
       </a>
+      {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- /dashboard has its own root layout, so the browser loads it as a new page either way */}
       <a className="nav__link" href="/dashboard/email" id="nav-email-settings">
         <span className="nav__link-label">Email settings</span>
       </a>

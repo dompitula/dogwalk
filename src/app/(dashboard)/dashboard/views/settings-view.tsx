@@ -26,6 +26,7 @@ export function SettingsView({
             <strong>Email settings</strong>
             <span>Manage booking emails, sender details and test delivery.</span>
           </div>
+          {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- same root layout; moving to next/link changes navigation, so it is a follow-up */}
           <a className="secondary-button settings-action" href="/dashboard/email">
             Open <Icon name="external" size={14} />
           </a>
@@ -51,6 +52,7 @@ export function SettingsView({
             <strong>Content manager</strong>
             <span>Add or edit dogs, photos, shelters, walks, bookings and staff accounts.</span>
           </div>
+          {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- /admin has its own root layout, so the browser loads it as a new page either way */}
           <a className="secondary-button settings-action" href="/admin">
             Open <Icon name="external" size={14} />
           </a>
@@ -60,6 +62,7 @@ export function SettingsView({
             <strong>Public booking site</strong>
             <span>See the walks visitors can book right now.</span>
           </div>
+          {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- The public site has its own root layout, so the browser loads it as a new page either way */}
           <a className="secondary-button settings-action" href="/">
             Open <Icon name="external" size={14} />
           </a>

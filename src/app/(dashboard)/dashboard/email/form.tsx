@@ -42,6 +42,7 @@ export function EmailForm({
           <input
             className="email-switch"
             type="checkbox"
+            // oxlint-disable-next-line jsx-a11y/role-has-required-aria-props -- a native checkbox's `checked` gives the switch its state; ARIA in HTML says not to add aria-checked as well
             role="switch"
             name="enabled"
             checked={enabled}

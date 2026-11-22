@@ -50,7 +50,7 @@ export function ScheduleView({
           .toLowerCase()
           .includes(search),
       )
-      .sort(bySchedule)
+      .toSorted(bySchedule)
   }, [walks, filter, selectedDate])
 
   return (
