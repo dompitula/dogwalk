@@ -1,6 +1,14 @@
 ﻿'use client'
 import { useRef } from 'react'
-import { FormSubmit, SaveButton, useDocumentInfo, useEditDepth, useForm, useHotkey, useTranslation } from '@payloadcms/ui'
+import {
+  FormSubmit,
+  SaveButton,
+  useDocumentInfo,
+  useEditDepth,
+  useForm,
+  useHotkey,
+  useTranslation,
+} from '@payloadcms/ui'
 
 export function DogSaveButton() {
   const { isEditing } = useDocumentInfo()
@@ -16,7 +24,7 @@ function CreateDogSaveButton() {
   const depth = useEditDepth()
   const ref = useRef<HTMLButtonElement>(null)
   const saving = useRef(false)
-  useHotkey({ cmdCtrlKey: true, editDepth: depth, keyCodes: ['s'] }, event => {
+  useHotkey({ cmdCtrlKey: true, editDepth: depth, keyCodes: ['s'] }, (event) => {
     event.preventDefault()
     event.stopPropagation()
     ref.current?.click()
@@ -31,5 +39,16 @@ function CreateDogSaveButton() {
       saving.current = false
     }
   }
-  return <FormSubmit buttonId="action-save" ref={ref} size="medium" type="button" disabled={uploadStatus === 'uploading'} onClick={save}>{t('general:save')}</FormSubmit>
+  return (
+    <FormSubmit
+      buttonId="action-save"
+      ref={ref}
+      size="medium"
+      type="button"
+      disabled={uploadStatus === 'uploading'}
+      onClick={save}
+    >
+      {t('general:save')}
+    </FormSubmit>
+  )
 }

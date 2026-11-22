@@ -23,6 +23,20 @@ export type BookingResult = {
 
 const text = (value: FormDataEntryValue | null) => (typeof value === 'string' ? value.trim() : '')
 
+/**
+ * Whether saving failed because the walk was taken first: the Bookings collection refuses a
+ * walk that is no longer available, and when two visitors book at the same moment, the
+ * database refuses the second booking of the walk (Payload reports "Value must be unique"
+ * for the slot in the error's details, not in its message).
+ */
+function walkWasTaken(error: unknown) {
+  if (!(error instanceof Error)) return false
+  const details = (error as { data?: { errors?: { message?: unknown }[] } }).data?.errors ?? []
+  return [error.message, ...details.map((detail) => detail.message)].some(
+    (message) => typeof message === 'string' && /no longer available|unique/i.test(message),
+  )
+}
+
 export async function createBooking(
   _previous: BookingResult,
   formData: FormData,
@@ -78,15 +92,13 @@ export async function createBooking(
       message: `Thanks, ${fullName.split(' ')[0]}! Your walk is requested. ${emailSent ? 'A confirmation email has been sent. Check your inbox and spam folder.' : 'Your request is saved, but we could not send the confirmation email. You do not need to book again.'} The shelter will contact you to confirm it.`,
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : ''
     return {
       success: false,
       slot,
       values,
-      message:
-        message.includes('no longer available') || message.includes('unique')
-          ? 'Someone just booked that walk. Please choose another available time.'
-          : 'We could not save your booking. Please try again.',
+      message: walkWasTaken(error)
+        ? 'Someone just booked that walk. Please choose another available time.'
+        : 'We could not save your booking. Please try again.',
     }
   }
 }

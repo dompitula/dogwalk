@@ -92,7 +92,7 @@ export const bySchedule = (a: WalkView, b: WalkView) => a.start.getTime() - b.st
 
 /** The first of `walks` that has not started yet and is not cancelled. */
 export const nextWalkFor = (walks: WalkView[], now: Date) =>
-  walks.filter((walk) => walk.start >= now && walk.status !== 'Cancelled').sort(bySchedule)[0]
+  walks.filter((walk) => walk.start >= now && walk.status !== 'Cancelled').toSorted(bySchedule)[0]
 
 /** The statuses staff can pick for a walk: a walk nobody booked can only be open or cancelled. */
 export const statusOptionsFor = (walk: WalkView): WalkStatus[] =>
@@ -133,7 +133,7 @@ export function toWalkViews(
 /** Everyone who booked a walk, by email address, sorted by name. */
 export function groupVolunteers(walks: WalkView[]): Volunteer[] {
   const byEmail = new Map<string, Volunteer>()
-  for (const walk of [...walks].sort(bySchedule)) {
+  for (const walk of walks.toSorted(bySchedule)) {
     const booking = walk.walk.booking
     if (!booking) continue
     const key = booking.email.toLowerCase()
@@ -148,5 +148,5 @@ export function groupVolunteers(walks: WalkView[]): Volunteer[] {
     volunteer.walks.push(walk)
     byEmail.set(key, volunteer)
   }
-  return [...byEmail.values()].sort((a, b) => a.name.localeCompare(b.name))
+  return [...byEmail.values()].toSorted((a, b) => a.name.localeCompare(b.name))
 }

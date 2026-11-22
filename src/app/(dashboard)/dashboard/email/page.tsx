@@ -9,10 +9,12 @@ export default async function EmailSettingsPage() {
   return (
     <main className="email-settings-page">
       <nav className="email-topbar">
+        {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- same root layout; moving to next/link changes navigation, so it is a follow-up */}
         <a href="/dashboard" className="email-brand">
           {BRAND_NAME}
           <span>Staff workspace</span>
         </a>
+        {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- same root layout; moving to next/link changes navigation, so it is a follow-up */}
         <a className="email-back" href="/dashboard">
           &larr; Back to dashboard
         </a>

@@ -1,39 +1,114 @@
 ﻿import path from 'node:path'
 import sharp from 'sharp'
 import type { Payload, PayloadRequest } from 'payload'
+import { MEDIA_DIR } from '../media-dir'
 
 export type InlineAttachment = { filename: string; content: string; content_id: string }
-const escape = (value: string) => value.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } as Record<string, string>)[char])
+const escape = (value: string) =>
+  value.replace(
+    /[&<>"']/g,
+    (char) =>
+      (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } as Record<
+          string,
+          string
+        >
+      )[char],
+  )
 // Same three-toe paw and orange color used by PawMark on the public website.
-const paw = '<svg xmlns="http://www.w3.org/2000/svg" width="84" height="84" viewBox="0 0 28 28"><g fill="#f2a33b" transform="rotate(-8 14 14)"><ellipse cx="14" cy="20" rx="10" ry="8"/><circle cx="5" cy="9" r="5"/><circle cx="14" cy="5" r="5"/><circle cx="23" cy="11" r="5"/></g></svg>'
+const paw =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="84" height="84" viewBox="0 0 28 28"><g fill="#f2a33b" transform="rotate(-8 14 14)"><ellipse cx="14" cy="20" rx="10" ry="8"/><circle cx="5" cy="9" r="5"/><circle cx="14" cy="5" r="5"/><circle cx="23" cy="11" r="5"/></g></svg>'
 
-export async function buildBookingEmail(payload: Payload, slot: number, fullName: string, preview = false, kind: 'request' | 'approved' | 'cancelled' = 'request', req?: PayloadRequest) {
-  const walk = await payload.findByID({ collection: 'walk-slots', id: slot, depth: 2, overrideAccess: true, req })
+export async function buildBookingEmail(
+  payload: Payload,
+  slot: number,
+  fullName: string,
+  preview = false,
+  kind: 'request' | 'approved' | 'cancelled' = 'request',
+  req?: PayloadRequest,
+) {
+  const walk = await payload.findByID({
+    collection: 'walk-slots',
+    id: slot,
+    depth: 2,
+    overrideAccess: true,
+    req,
+  })
   const settings = await payload.findGlobal({ slug: 'email-settings', overrideAccess: true, req })
   const dog = typeof walk.dog === 'object' ? walk.dog : null
   const shelter = typeof walk.shelter === 'object' ? walk.shelter : null
   const zone = settings.timeZone || 'Europe/Warsaw'
-  const date = new Intl.DateTimeFormat('en', { dateStyle: 'full', timeZone: zone }).format(new Date(walk.startsAt))
-  const time = new Intl.DateTimeFormat('en', { timeStyle: 'short', timeZone: zone }).format(new Date(walk.startsAt))
-  const attachments: InlineAttachment[] = [{ filename: 'the-good-walk.png', content_id: 'brand-paw', content: (await sharp(Buffer.from(paw)).png().toBuffer()).toString('base64') }]
+  const date = new Intl.DateTimeFormat('en', { dateStyle: 'full', timeZone: zone }).format(
+    new Date(walk.startsAt),
+  )
+  const time = new Intl.DateTimeFormat('en', { timeStyle: 'short', timeZone: zone }).format(
+    new Date(walk.startsAt),
+  )
+  const attachments: InlineAttachment[] = [
+    {
+      filename: 'the-good-walk.png',
+      content_id: 'brand-paw',
+      content: (await sharp(Buffer.from(paw)).png().toBuffer()).toString('base64'),
+    },
+  ]
   let photo = false
   const media = dog && typeof dog.photo === 'object' ? dog.photo : null
   if (media?.filename && path.basename(media.filename) === media.filename) {
     try {
-      const buffer = await sharp(path.join(process.cwd(), 'media', media.filename), { limitInputPixels: 40000000 }).rotate().resize(1120, 640, { fit: 'cover', position: 'attention' }).jpeg({ quality: 82 }).toBuffer()
-      attachments.push({ filename: 'walking-companion.jpg', content_id: 'walk-dog', content: buffer.toString('base64') })
+      const buffer = await sharp(path.join(MEDIA_DIR, media.filename), {
+        limitInputPixels: 40000000,
+      })
+        .rotate()
+        .resize(1120, 640, { fit: 'cover', position: 'attention' })
+        .jpeg({ quality: 82 })
+        .toBuffer()
+      attachments.push({
+        filename: 'walking-companion.jpg',
+        content_id: 'walk-dog',
+        content: buffer.toString('base64'),
+      })
       photo = true
-    } catch { payload.logger.warn('Email dog photo unavailable; sending confirmation without photo.') }
+    } catch {
+      payload.logger.warn('Email dog photo unavailable; sending confirmation without photo.')
+    }
   }
   const name = dog?.name || 'Your walking companion'
   const firstName = fullName.trim().split(/\s+/)[0] || 'friend'
   const approved = kind === 'approved'
   const cancelled = kind === 'cancelled'
-  const greeting = cancelled ? `Hi, ${firstName}. Your walk has been cancelled.` : approved ? `Great news, ${firstName}! Your walk is confirmed.` : `Thanks, ${firstName}! Your walk request has been received.`
-  const nextSteps = cancelled ? 'Please do not arrive for this walk. If you would like to arrange another visit or have any questions, please contact the shelter. Thank you for your understanding.' : approved ? 'Your walk is confirmed. Please arrive at the shelter at the time shown above and check in with the team before meeting your walking companion.' : 'Awaiting shelter approval. The team will contact you to confirm your walk and arrival details.'
-  const subject = preview ? 'Preview: your Good Walk confirmation' : cancelled ? `Your walk with ${name} has been cancelled` : approved ? `Your walk with ${name} is confirmed!` : `Your walk request with ${name} is in!`
-  const text = [preview ? 'TEST PREVIEW ONLY - no booking was created.' : '', greeting, `Dog: ${name}`, `Date: ${date}`, `Time: ${time} (${zone})`, `Duration: ${walk.durationMinutes} minutes`, `Shelter: ${shelter?.name || 'Your shelter'}`, shelter?.address || '', nextSteps, 'The Good Walk'].filter(Boolean).join('\n\n')
-  const row = (label: string, value: string) => `<tr><td style="padding:12px 0;border-bottom:1px solid #e5e9df;color:#77816f;font-size:12px;width:88px;vertical-align:top">${label}</td><td style="padding:12px 0;border-bottom:1px solid #e5e9df;color:#284530;font-size:14px;line-height:21px">${escape(value)}</td></tr>`
+  const greeting = cancelled
+    ? `Hi, ${firstName}. Your walk has been cancelled.`
+    : approved
+      ? `Great news, ${firstName}! Your walk is confirmed.`
+      : `Thanks, ${firstName}! Your walk request has been received.`
+  const nextSteps = cancelled
+    ? 'Please do not arrive for this walk. If you would like to arrange another visit or have any questions, please contact the shelter. Thank you for your understanding.'
+    : approved
+      ? 'Your walk is confirmed. Please arrive at the shelter at the time shown above and check in with the team before meeting your walking companion.'
+      : 'Awaiting shelter approval. The team will contact you to confirm your walk and arrival details.'
+  const subject = preview
+    ? 'Preview: your Good Walk confirmation'
+    : cancelled
+      ? `Your walk with ${name} has been cancelled`
+      : approved
+        ? `Your walk with ${name} is confirmed!`
+        : `Your walk request with ${name} is in!`
+  const text = [
+    preview ? 'TEST PREVIEW ONLY - no booking was created.' : '',
+    greeting,
+    `Dog: ${name}`,
+    `Date: ${date}`,
+    `Time: ${time} (${zone})`,
+    `Duration: ${walk.durationMinutes} minutes`,
+    `Shelter: ${shelter?.name || 'Your shelter'}`,
+    shelter?.address || '',
+    nextSteps,
+    'The Good Walk',
+  ]
+    .filter(Boolean)
+    .join('\n\n')
+  const row = (label: string, value: string) =>
+    `<tr><td style="padding:12px 0;border-bottom:1px solid #e5e9df;color:#77816f;font-size:12px;width:88px;vertical-align:top">${label}</td><td style="padding:12px 0;border-bottom:1px solid #e5e9df;color:#284530;font-size:14px;line-height:21px">${escape(value)}</td></tr>`
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body style="margin:0;padding:0;background:#f5f3ed;font-family:Arial,Helvetica,sans-serif;color:#23442f">
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all">${cancelled ? 'Your walk with ' + escape(name) + ' has been cancelled. Please do not arrive for this walk.' : approved ? 'Your walk with ' + escape(name) + ' is confirmed. See you at the shelter!' : 'Your request with ' + escape(name) + ' is saved. The shelter will be in touch.'}</div>
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f5f3ed"><tr><td align="center" style="padding:28px 12px">

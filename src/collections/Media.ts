@@ -1,5 +1,5 @@
-import path from 'path'
 import type { CollectionConfig } from 'payload'
+import { MEDIA_DIR } from '../lib/media-dir'
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -15,7 +15,7 @@ export const Media: CollectionConfig = {
   ],
   upload: {
     // Uploaded files are stored on disk in the `media` folder of the project.
-    staticDir: path.resolve(process.cwd(), 'media'),
+    staticDir: MEDIA_DIR,
     modifyResponseHeaders: ({ headers }) => {
       headers.set('Cache-Control', 'public, max-age=3600, s-maxage=3600')
       return headers

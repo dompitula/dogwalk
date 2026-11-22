@@ -29,9 +29,12 @@ export function useDashboardData(data: DashboardData) {
   const [statusOverrides, setStatusOverrides] = useState<Record<string, WalkStatus>>({})
   const [notice, setNotice] = useState<Notice | null>(null)
 
-  // Fresh data from the server replaces any status shown optimistically.
+  // Fresh data from the server replaces any status shown optimistically. `data` only changes
+  // when the server sends new data (router.refresh), so this cannot loop.
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- runs only when the server sends new data
     setStatusOverrides({})
+    // oxlint-disable-next-line react/exhaustive-effect-dependencies -- `data` is the trigger, not an input
   }, [data])
 
   useEffect(() => {
@@ -148,6 +151,7 @@ export function useDefaultDuration() {
   useEffect(() => {
     try {
       const stored = Number(window.localStorage.getItem(DURATION_STORAGE_KEY))
+      // oxlint-disable-next-line react/set-state-in-effect -- runs once: browser storage cannot be read during the server render
       if ((WALK_DURATIONS as readonly number[]).includes(stored)) setDuration(stored)
     } catch {
       // Storage can be unavailable (private mode); the default stays at 45 minutes.

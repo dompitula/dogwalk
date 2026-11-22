@@ -81,6 +81,7 @@ export function LoginForm({ hasStaffAccount }: { hasStaffAccount: boolean }) {
               There is no staff account yet. Create the first one in the content manager, then come
               back here.
             </p>
+            {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- /admin has its own root layout, so the browser loads it as a new page either way */}
             <a className="primary-button" href="/admin">
               Create the first staff account
             </a>
@@ -88,7 +89,9 @@ export function LoginForm({ hasStaffAccount }: { hasStaffAccount: boolean }) {
         )}
 
         <div className="login-links">
+          {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- The public site has its own root layout, so the browser loads it as a new page either way */}
           <a href="/">← Back to the public site</a>
+          {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- /admin has its own root layout, so the browser loads it as a new page either way */}
           <a href="/admin">Content manager</a>
         </div>
       </div>

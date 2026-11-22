@@ -53,8 +53,9 @@ while [ $# -gt 0 ]; do
   esac
 done
 if [ "$teardown" = 1 ]; then
-  [ "$port_given" = 0 ] && [ "$clean" = 0 ] ||
+  if [ "$port_given" = 1 ] || [ "$clean" = 1 ]; then
     die "--teardown only deletes; it cannot be combined with --port or --clean. Run the deploy command again afterwards."
+  fi
 else
   [ "$assume_yes" = 0 ] || die "--yes only applies to --teardown."
   case "$port" in '' | *[!0-9]*) die "the port must be a number, got '$port'" ;; esac

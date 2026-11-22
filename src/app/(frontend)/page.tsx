@@ -3,63 +3,17 @@ import { connection } from 'next/server'
 import config from '@payload-config'
 import { getPayload } from 'payload'
 import { Icon } from '@/components/icon'
+import { findAvailableWalks } from '@/lib/available-walks'
 import { BRAND_NAME } from '@/lib/brand'
-import { BookingExperience, type WalkOption } from './booking-experience'
+import { BookingExperience } from './booking-experience'
 
 /** The brand mark: a paw, tilted. */
 const PawMark = () => <Icon name="paw" size={28} className="-rotate-8" />
 
-async function getAvailableWalks(): Promise<WalkOption[]> {
+async function getAvailableWalks() {
   await connection()
   const payload = await getPayload({ config })
-  const result = await payload.find({
-    collection: 'walk-slots',
-    overrideAccess: false,
-    depth: 3,
-    limit: 24,
-    sort: 'startsAt',
-    where: {
-      and: [
-        { status: { equals: 'available' } },
-        { startsAt: { greater_than: new Date().toISOString() } },
-      ],
-    },
-  })
-
-  return result.docs.flatMap((slot) => {
-    if (typeof slot.dog !== 'object' || typeof slot.shelter !== 'object') return []
-    const dog = slot.dog
-    const shelter = slot.shelter
-    if (typeof dog.photo !== 'object' || !dog.photo.url || !dog.active || !shelter.active) return []
-
-    return [
-      {
-        id: String(slot.id),
-        startsAt: slot.startsAt,
-        durationMinutes: slot.durationMinutes,
-        dog: {
-          name: dog.name,
-          breed: dog.breed,
-          ageLabel: dog.ageLabel,
-          size: dog.size,
-          energy: dog.energy,
-          bio: dog.bio,
-          traits: (dog.traits ?? []).map((trait) => trait.label),
-          photo: {
-            url: dog.photo.url,
-            alt: dog.photo.alt,
-            width: dog.photo.width,
-            height: dog.photo.height,
-          },
-        },
-        shelter: {
-          name: shelter.name,
-          neighborhood: shelter.neighborhood,
-          address: shelter.address,
-        },
-      },
-    ]
-  })
+  return findAvailableWalks(payload)
 }
 
 export default async function HomePage() {
@@ -235,6 +189,7 @@ export default async function HomePage() {
             {BRAND_NAME}
           </div>
           <p>Helping local shelter dogs get more fresh air, one walk at a time.</p>
+          {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- /dashboard has its own root layout, so the browser loads it as a new page either way */}
           <a href="/dashboard" className="font-bold text-white/60 transition hover:text-white">
             Shelter login
           </a>

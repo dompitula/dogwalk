@@ -21,7 +21,7 @@ export function OverviewView({
   const thisWeekWalks = walks.filter((walk) => isInWeek(walk, week))
   const upcomingWalks = walks
     .filter((walk) => walk.date >= todayKey && walk.status !== 'Cancelled')
-    .sort(bySchedule)
+    .toSorted(bySchedule)
   const pendingCount = thisWeekWalks.filter((walk) => walk.status === 'Pending').length
   const openCount = thisWeekWalks.filter((walk) => walk.status === 'Needs Volunteer').length
 

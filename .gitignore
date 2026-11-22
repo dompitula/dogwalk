@@ -8,6 +8,8 @@ build/
 !.env.example
 next-env.d.ts
 *.tsbuildinfo
+# Test coverage reports (pnpm test:coverage)
+coverage/
 *-debug.log*
 logs/
 *.log

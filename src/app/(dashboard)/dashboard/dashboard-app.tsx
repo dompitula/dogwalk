@@ -35,21 +35,23 @@ export function DashboardApp({ data }: { data: DashboardData }) {
   /** The "Schedule a walk" dialog's starting values while it is open. */
   const [newWalk, setNewWalk] = useState<{ dogId: string; date: string } | null>(null)
   const [detailsWalkId, setDetailsWalkId] = useState<string | null>(null)
+  const { notice, setNotice } = dashboard
 
   // The dashboard depends on the viewer's clock and time zone, so it renders in the browser only.
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- runs once, after hydration: the dashboard's first browser-only render
     setMounted(true)
     // After adding a dog, the content manager opens /dashboard?view=dogs&created=1.
     const params = new URLSearchParams(window.location.search)
     if (params.get('view') !== 'dogs') return
     setActiveView('Dogs')
     if (params.get('created') === '1') {
-      dashboard.setNotice({ kind: 'success', text: 'Dog added successfully.' })
+      setNotice({ kind: 'success', text: 'Dog added successfully.' })
       params.delete('created')
       window.history.replaceState(null, '', `${window.location.pathname}?${params}`)
     }
-    // Runs once, on the first render in the browser (setNotice never changes).
-  }, [])
+    // Runs once, on the first render in the browser (setNotice is a state setter, so it never changes).
+  }, [setNotice])
 
   if (!mounted) {
     return (
@@ -59,9 +61,9 @@ export function DashboardApp({ data }: { data: DashboardData }) {
     )
   }
 
+  // oxlint-disable-next-line react/purity -- the dashboard renders in the browser only (see `mounted`), and each render shows the current time
   const now = new Date()
   const todayKey = dateKey(now)
-  const { notice, setNotice } = dashboard
   const detailsWalk = dashboard.walks.find((walk) => walk.id === detailsWalkId) ?? null
 
   function openView(view: NavView) {
