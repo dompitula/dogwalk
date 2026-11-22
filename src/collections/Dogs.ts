@@ -115,9 +115,12 @@ export const Dogs: CollectionConfig = {
       label: 'Special care needs',
       type: 'select',
       hasMany: true,
-      options: SPECIAL_CARE_OPTIONS.map(value => ({ label: value, value })),
+      options: SPECIAL_CARE_OPTIONS.map((value) => ({ label: value, value })),
       access: { read: staffOnly },
-      admin: { components: { Field: '/components/admin/SpecialCareField#SpecialCareField' }, description: 'Select all known care needs. Leave empty if none are recorded. Staff only.' },
+      admin: {
+        components: { Field: '/components/admin/SpecialCareField#SpecialCareField' },
+        description: 'Select all known care needs. Leave empty if none are recorded. Staff only.',
+      },
     },
     {
       name: 'careNotes',
@@ -125,7 +128,10 @@ export const Dogs: CollectionConfig = {
       type: 'textarea',
       maxLength: 1000,
       access: { read: staffOnly },
-      admin: { description: 'Add practical instructions for shelter staff, including details for Other care needs. Staff only.' },
+      admin: {
+        description:
+          'Add practical instructions for shelter staff, including details for Other care needs. Staff only.',
+      },
     },
     {
       name: 'active',

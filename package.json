@@ -9,6 +9,7 @@
     "build": "cross-env NODE_OPTIONS=--no-deprecation payload build",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload"
