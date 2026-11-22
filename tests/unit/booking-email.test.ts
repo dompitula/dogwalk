@@ -1,8 +1,20 @@
 import { randomUUID } from 'node:crypto'
+import { copyFileSync, rmSync } from 'node:fs'
+import path from 'node:path'
 import type { Payload } from 'payload'
 import sharp from 'sharp'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { buildBookingEmail } from '@/lib/email/booking-email'
+
+// A throwaway media folder, set before booking-email.ts (and so media-dir.ts) is imported.
+const mediaDir = await vi.hoisted(async () => {
+  const { mkdtempSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const dir = mkdtempSync(join(tmpdir(), 'good-walk-unit-media-'))
+  process.env.MEDIA_DIR = dir
+  return dir
+})
 
 // The real sharp, wrapped in a spy to see which files it is asked to read.
 vi.mock('sharp', async (importOriginal) => {
@@ -49,6 +61,10 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllEnvs()
+})
+
+afterAll(() => {
+  rmSync(mediaDir, { recursive: true, force: true })
 })
 
 describe('buildBookingEmail', () => {
@@ -124,6 +140,23 @@ describe('buildBookingEmail', () => {
     expect(message.html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
     expect(message.html).toContain('Milo &lt;b&gt;bold&lt;/b&gt;')
     expect(message.html).toContain('Shelter &amp; Co')
+  })
+
+  it('attaches the dog photo from the media folder', async () => {
+    copyFileSync(path.resolve('src/seed/images/milo.jpg'), path.join(mediaDir, 'milo.jpg'))
+    const walk = baseWalk()
+    walk.dog!.photo = { filename: 'milo.jpg' }
+    const { payload, asPayload } = fakePayload(walk)
+    const message = await buildBookingEmail(asPayload, 7, 'Maya Chen')
+
+    expect(sharpInputs()).toContain(path.join(mediaDir, 'milo.jpg'))
+    expect(payload.logger.warn).not.toHaveBeenCalled()
+    expect(message.attachments.map((item) => item.content_id)).toEqual(['brand-paw', 'walk-dog'])
+    expect(message.attachments[1].filename).toBe('walking-companion.jpg')
+    expect(Buffer.from(message.attachments[1].content, 'base64').subarray(0, 2)).toEqual(
+      Buffer.from([0xff, 0xd8]), // a JPEG
+    )
+    expect(message.html).toContain('<img src="cid:walk-dog" alt="Milo"')
   })
 
   it('never reads a photo whose file name leaves the media folder', async () => {

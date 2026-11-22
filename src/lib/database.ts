@@ -52,7 +52,7 @@ export function sqliteDatabase(url: string): ReturnType<typeof sqliteAdapter> {
  * push runs this same array). An index is only created again after its table or the index
  * itself was dropped, so a repeat without a DROP in between would fail.
  */
-function removeRepeatedIndexes(statements: string[]) {
+export function removeRepeatedIndexes(statements: string[]) {
   const created = new Set<string>()
   let kept = 0
   for (const statement of statements) {

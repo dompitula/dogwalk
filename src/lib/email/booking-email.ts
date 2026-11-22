@@ -1,6 +1,7 @@
 ﻿import path from 'node:path'
 import sharp from 'sharp'
 import type { Payload, PayloadRequest } from 'payload'
+import { MEDIA_DIR } from '../media-dir'
 
 export type InlineAttachment = { filename: string; content: string; content_id: string }
 const escape = (value: string) =>
@@ -54,7 +55,7 @@ export async function buildBookingEmail(
   const media = dog && typeof dog.photo === 'object' ? dog.photo : null
   if (media?.filename && path.basename(media.filename) === media.filename) {
     try {
-      const buffer = await sharp(path.join(process.cwd(), 'media', media.filename), {
+      const buffer = await sharp(path.join(MEDIA_DIR, media.filename), {
         limitInputPixels: 40000000,
       })
         .rotate()
