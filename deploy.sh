@@ -307,7 +307,9 @@ EOF
 NODE_ENV=development pnpm run payload run .venv/init-database.ts
 
 step "Build"
+rm -f .next/BUILD_ID
 pnpm run build
+[ -f .next/BUILD_ID ] || die "the build did not finish, so the app was not started. See the build output above. If Next.js offered an upgrade, update \"next\" in package.json to that version and run the deploy command again."
 
 step "Start"
 echo "The Good Walk is starting on http://localhost:$port (stop it with Ctrl+C)"
