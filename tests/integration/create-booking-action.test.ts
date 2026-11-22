@@ -147,4 +147,18 @@ describe('createBooking', () => {
     expect(result).toMatchObject({ success: false, message: TAKEN, values: VALID })
     expect(await count('bookings')).toBe(0)
   })
+
+  it('books a walk only once when two visitors book it at the same time', async () => {
+    const slot = await createSlot()
+
+    const results = await Promise.all([
+      book(slot.id),
+      book(slot.id, { fullName: 'Alex Morgan', email: 'alex@example.com' }),
+    ])
+
+    expect(results.filter((result) => result.success)).toHaveLength(1)
+    expect(results.find((result) => !result.success)?.message).toBe(TAKEN)
+    expect(await count('bookings')).toBe(1)
+    expect((await stored('walk-slots', slot.id)).status).toBe('booked')
+  })
 })
