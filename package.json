@@ -14,6 +14,7 @@
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
+    "typecheck": "cross-env NODE_OPTIONS=--no-deprecation next typegen && tsc --noEmit",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload"
   },
   "dependencies": {
