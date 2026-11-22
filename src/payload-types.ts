@@ -81,8 +81,6 @@ export interface Config {
   collections: {
     admins: Admin;
     media: Media;
-    folders: Folder;
-    tags: Tag;
     shelters: Shelter;
     dogs: Dog;
     'walk-slots': WalkSlot;
@@ -97,8 +95,6 @@ export interface Config {
   collectionsSelect: {
     admins: AdminsSelect<false> | AdminsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
-    folders: FoldersSelect<false> | FoldersSelect<true>;
-    tags: TagsSelect<false> | TagsSelect<true>;
     shelters: SheltersSelect<false> | SheltersSelect<true>;
     dogs: DogsSelect<false> | DogsSelect<true>;
     'walk-slots': WalkSlotsSelect<false> | WalkSlotsSelect<true>;
@@ -192,8 +188,6 @@ export interface Admin {
 export interface Media {
   id: number;
   alt: string;
-  _h_folders?: (number | null) | Folder;
-  _h_tags?: (number | Tag)[] | null;
   createdBy?: {
     relationTo: 'admins';
     value: number | Admin;
@@ -223,48 +217,6 @@ export interface Media {
   };
   focalX?: number | null;
   focalY?: number | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "folders".
- */
-export interface Folder {
-  id: number;
-  _h_folders?: (number | null) | Folder;
-  name: string;
-  createdBy?: {
-    relationTo: 'admins';
-    value: number | Admin;
-  } | null;
-  updatedBy?: {
-    relationTo: 'admins';
-    value: number | Admin;
-  } | null;
-  updatedAt: string;
-  createdAt: string;
-  _h_slugPath?: string | null;
-  _h_titlePath?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "tags".
- */
-export interface Tag {
-  id: number;
-  _h_tags?: (number | null) | Tag;
-  name: string;
-  createdBy?: {
-    relationTo: 'admins';
-    value: number | Admin;
-  } | null;
-  updatedBy?: {
-    relationTo: 'admins';
-    value: number | Admin;
-  } | null;
-  updatedAt: string;
-  createdAt: string;
-  _h_slugPath?: string | null;
-  _h_titlePath?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -436,14 +388,6 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
-        relationTo: 'folders';
-        value: number | Folder;
-      } | null)
-    | ({
-        relationTo: 'tags';
-        value: number | Tag;
-      } | null)
-    | ({
         relationTo: 'shelters';
         value: number | Shelter;
       } | null)
@@ -554,8 +498,6 @@ export interface AdminsSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
-  _h_folders?: T;
-  _h_tags?: T;
   createdBy?: T;
   updatedBy?: T;
   updatedAt?: T;
@@ -581,34 +523,6 @@ export interface MediaSelect<T extends boolean = true> {
       };
   focalX?: T;
   focalY?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "folders_select".
- */
-export interface FoldersSelect<T extends boolean = true> {
-  _h_folders?: T;
-  name?: T;
-  createdBy?: T;
-  updatedBy?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  _h_slugPath?: T;
-  _h_titlePath?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "tags_select".
- */
-export interface TagsSelect<T extends boolean = true> {
-  _h_tags?: T;
-  name?: T;
-  createdBy?: T;
-  updatedBy?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  _h_slugPath?: T;
-  _h_titlePath?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -811,7 +725,7 @@ export interface CollectionsWidget {
 export interface CollectionQueryWidget {
   data?: {
     title?: string | null;
-    relatedCollection: 'admins' | 'media' | 'folders' | 'tags' | 'shelters' | 'dogs' | 'walk-slots' | 'bookings';
+    relatedCollection: 'admins' | 'media' | 'shelters' | 'dogs' | 'walk-slots' | 'bookings';
     where?:
       | {
           [k: string]: unknown;
@@ -833,8 +747,7 @@ export interface CollectionQueryWidget {
  */
 export interface ActivityWidget {
   data?: {
-    excludedCollections?:
-      ('admins' | 'media' | 'folders' | 'tags' | 'shelters' | 'dogs' | 'walk-slots' | 'bookings')[] | null;
+    excludedCollections?: ('admins' | 'media' | 'shelters' | 'dogs' | 'walk-slots' | 'bookings')[] | null;
   };
   width: 'small' | 'medium' | 'large' | 'x-large' | 'full';
 }

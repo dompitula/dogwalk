@@ -24,12 +24,6 @@ export type BookingStatusValue = (typeof BOOKING_STATUS_OPTIONS)[number]['value'
 
 export type SlotStatusValue = 'available' | 'booked' | 'cancelled'
 
-export const EXPERIENCE_LABELS: Record<string, string> = {
-  'first-time': 'First-time walker',
-  some: 'Some experience',
-  experienced: 'Experienced walker',
-}
-
 export const ENERGY_LABELS: Record<string, string> = {
   easygoing: 'Easygoing',
   moderate: 'Moderate',
@@ -37,6 +31,9 @@ export const ENERGY_LABELS: Record<string, string> = {
 }
 
 export const WALK_DURATIONS = [30, 45, 60, 90] as const
+
+/** Longest handling notes on a walk, in characters. */
+export const HANDLING_NOTES_MAX = 500
 
 /** Status shown in the staff dashboard, derived from the walk slot and its booking. */
 export type WalkStatus =

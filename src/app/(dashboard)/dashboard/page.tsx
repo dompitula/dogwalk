@@ -1,20 +1,17 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
+import { toID } from '@/lib/ids'
 import { getStaffSession } from '@/lib/staff-auth'
 import type { BookingStatusValue, SlotStatusValue } from '@/lib/walks'
 import { DashboardApp } from './dashboard-app'
 import type { DashboardBooking, DashboardData, DashboardDog, DashboardWalk } from './types'
 
 export const metadata: Metadata = {
-  title: 'Staff dashboard · ShelterWalk',
+  title: 'Staff dashboard',
 }
 
-const relationID = (value: unknown): string =>
-  value && typeof value === 'object' && 'id' in value
-    ? String((value as { id: string | number }).id)
-    : value == null
-      ? ''
-      : String(value)
+/** A relationship's ID as the text the dashboard uses for IDs ('' when there is none). */
+const relationKey = (value: unknown) => String(toID(value) ?? '')
 
 export default async function DashboardPage() {
   const { payload, user } = await getStaffSession()
@@ -67,7 +64,7 @@ export default async function DashboardPage() {
 
   const bookingsBySlot = new Map<string, DashboardBooking>()
   for (const booking of bookingResult.docs) {
-    bookingsBySlot.set(relationID(booking.slot), {
+    bookingsBySlot.set(relationKey(booking.slot), {
       id: String(booking.id),
       fullName: booking.fullName,
       email: booking.email,
@@ -81,7 +78,7 @@ export default async function DashboardPage() {
 
   const walks: DashboardWalk[] = slotResult.docs.map((slot) => ({
     id: String(slot.id),
-    dogId: relationID(slot.dog),
+    dogId: relationKey(slot.dog),
     startsAt: slot.startsAt,
     durationMinutes: slot.durationMinutes,
     route: slot.route ?? null,

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# deploy.sh: build ShelterWalk and start it in production mode.
+# deploy.sh: build The Good Walk and start it in production mode.
 #
 # Everything the app needs is installed into .venv/ in this folder: Node.js
 # (the version pinned in .mise.toml), pnpm (the version pinned in package.json)
@@ -137,7 +137,7 @@ run_teardown() {
     local abs pid
     abs="$(cd "$(dirname "$db")" && pwd -P)/$(basename "$db")"
     pid="$(find /proc/[0-9]*/fd -lname "$abs" 2>/dev/null | head -n 1 | cut -d/ -f3 || true)"
-    [ -z "$pid" ] || die "ShelterWalk is still running (process $pid has $db open). Stop it with Ctrl+C in its terminal, then run the teardown again."
+    [ -z "$pid" ] || die "The Good Walk is still running (process $pid has $db open). Stop it with Ctrl+C in its terminal, then run the teardown again."
   fi
 
   echo "This deletes, in $(native_path "$root"):"
@@ -307,8 +307,10 @@ EOF
 NODE_ENV=development pnpm run payload run .venv/init-database.ts
 
 step "Build"
+rm -f .next/BUILD_ID
 pnpm run build
+[ -f .next/BUILD_ID ] || die "the build did not finish, so the app was not started. See the build output above. If Next.js offered an upgrade, update \"next\" in package.json to that version and run the deploy command again."
 
 step "Start"
-echo "ShelterWalk is starting on http://localhost:$port (stop it with Ctrl+C)"
+echo "The Good Walk is starting on http://localhost:$port (stop it with Ctrl+C)"
 exec pnpm run start --port "$port"

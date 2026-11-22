@@ -1,5 +1,5 @@
 import type { CollectionConfig, FieldAccess } from 'payload'
-import { WALK_ROUTES } from '../lib/walks'
+import { HANDLING_NOTES_MAX, WALK_ROUTES } from '../lib/walks'
 
 // Route and handling notes are for shelter staff; the public site never sees them.
 const staffOnly: FieldAccess = ({ req }) => req.user?.collection === 'admins'
@@ -82,7 +82,7 @@ export const WalkSlots: CollectionConfig = {
     {
       name: 'handlingNotes',
       type: 'textarea',
-      maxLength: 500,
+      maxLength: HANDLING_NOTES_MAX,
       access: { read: staffOnly },
       admin: {
         description: 'Harness, behaviour, medication or other instructions. Staff only.',

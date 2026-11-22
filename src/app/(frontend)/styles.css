@@ -1,10 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600&display=swap');
+/* Public site. Colours and fonts come from the shared tokens (../tokens.css). */
 @import 'tailwindcss';
-
-@theme {
-  --font-sans: 'DM Sans', sans-serif;
-  --font-serif: 'Fraunces', serif;
-}
+@import '../tokens.css';
 
 @layer base {
   html {
@@ -24,15 +20,15 @@
 
 @layer components {
   .eyebrow {
-    @apply text-xs font-bold uppercase tracking-[.18em] text-[#db5d3f];
+    @apply text-xs font-bold uppercase tracking-[.18em] text-coral-500;
   }
 
   .filter-control {
-    @apply flex items-center gap-3 rounded-full border border-[#dfe6e0] bg-white px-4 py-2.5 text-xs font-bold text-[#3d5947] shadow-sm;
+    @apply flex items-center gap-3 rounded-full border border-sage-300 bg-white px-4 py-2.5 text-xs font-bold text-pine-700 shadow-sm;
   }
 
   .filter-control select {
-    @apply cursor-pointer bg-transparent pr-2 text-sm font-semibold text-[#173f2b] outline-none;
+    @apply cursor-pointer bg-transparent pr-2 text-sm font-semibold text-forest-900 outline-none;
   }
 
   .form-field {
@@ -40,49 +36,29 @@
   }
 
   .form-field > span {
-    @apply mb-1.5 block text-xs font-bold text-[#294a36];
+    @apply mb-1.5 block text-xs font-bold text-pine-800;
   }
 
   .form-field em {
-    @apply font-normal text-[#88958c];
+    @apply font-normal text-moss-400;
   }
 
   .form-field input,
   .form-field select,
   .form-field textarea {
-    @apply w-full rounded-xl border border-[#dce5de] bg-white px-3.5 py-3 text-sm text-[#173f2b] outline-none transition placeholder:text-[#a7b1aa] focus:border-[#4c8060] focus:ring-3 focus:ring-[#4c8060]/10;
+    @apply w-full rounded-xl border border-sage-300 bg-white px-3.5 py-3 text-sm text-forest-900 outline-none transition placeholder:text-moss-300 focus:border-forest-600 focus:ring-3 focus:ring-forest-600/10;
   }
 
   .form-field small {
-    @apply mt-1 block text-xs font-medium text-[#b9472f];
+    @apply mt-1 block text-xs font-medium text-coral-700;
   }
 }
 
 .hero-orb {
   filter: blur(0);
-  background-image: radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.08), transparent 55%);
-}
-
-.figma-custom-code-fragment {
-  display: contents;
-}
-
-.figma-bypass-link {
-  position: fixed;
-  top: 8px;
-  left: 8px;
-  z-index: 2147483647;
-  transform: translateY(-150%);
-  border-radius: 6px;
-  background: #111827;
-  color: #fff;
-  padding: 8px 12px;
-  font:
-    600 14px/1.2 system-ui,
-    sans-serif;
-  text-decoration: none;
-}
-
-.figma-bypass-link:focus {
-  transform: translateY(0);
+  background-image: radial-gradient(
+    circle at 40% 40%,
+    --alpha(var(--color-white) / 8%),
+    transparent 55%
+  );
 }

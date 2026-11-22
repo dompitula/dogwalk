@@ -4,14 +4,10 @@ import { buildBookingEmail } from '@/lib/email/booking-email'
 import { sendEmail } from '@/lib/email/email-settings'
 import config from '@payload-config'
 import { getPayload } from 'payload'
+import { type BookingInput, type ExperienceValue, bookingErrors } from '@/lib/booking-rules'
+import { toID } from '@/lib/ids'
 
-export type BookingValues = {
-  fullName: string
-  email: string
-  phone: string
-  experience: string
-  notes: string
-}
+export type BookingValues = BookingInput
 
 export type BookingResult = {
   emailSent?: boolean
@@ -40,21 +36,12 @@ export async function createBooking(
     notes: text(formData.get('notes')),
   }
   const { fullName, email, phone, experience, notes } = values
-  const errors: Record<string, string> = {}
+  // The same rules as the Bookings collection, checked here first so each field gets its message.
+  const errors: Record<string, string> = bookingErrors(values)
+  const slotID = toID(slot)
+  if (slotID === null) errors.slot = 'Choose a walk to continue.'
 
-  // Walk IDs are numbers in the SQLite database; the form sends them as text.
-  if (!/^\d+$/.test(slot)) errors.slot = 'Choose a walk to continue.'
-  if (fullName.length < 2 || fullName.length > 100) errors.fullName = 'Enter your full name.'
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 150) {
-    errors.email = 'Enter a valid email address.'
-  }
-  if (phone.length < 7 || phone.length > 40) errors.phone = 'Enter a valid phone number.'
-  if (!['first-time', 'some', 'experienced'].includes(experience)) {
-    errors.experience = 'Tell us about your dog walking experience.'
-  }
-  if (notes.length > 500) errors.notes = 'Keep notes under 500 characters.'
-
-  if (Object.keys(errors).length) {
+  if (slotID === null || Object.keys(errors).length) {
     return { success: false, message: 'Please check the highlighted fields.', slot, errors, values }
   }
 
@@ -65,11 +52,11 @@ export async function createBooking(
       overrideAccess: false,
       draft: false,
       data: {
-        slot: Number(slot),
+        slot: slotID,
         fullName,
         email,
         phone,
-        experience: experience as 'first-time' | 'some' | 'experienced',
+        experience: experience as ExperienceValue,
         notes: notes || undefined,
         status: 'pending',
       },

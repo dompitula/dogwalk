@@ -4,7 +4,7 @@ import { getStaffSession } from '@/lib/staff-auth'
 import { LoginForm } from './login-form'
 
 export const metadata: Metadata = {
-  title: 'Staff sign in · ShelterWalk',
+  title: 'Staff sign in',
 }
 
 export default async function StaffLoginPage() {

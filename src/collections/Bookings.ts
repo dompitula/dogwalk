@@ -1,6 +1,8 @@
 import type { CollectionConfig } from 'payload'
-import { sendCancellationEmail } from '../lib/email/send-cancellation-email'
+import { BOOKING_LIMITS, EXPERIENCE_OPTIONS, validateBookingField } from '../lib/booking-rules'
 import { sendApprovalEmail } from '../lib/email/send-approval-email'
+import { sendCancellationEmail } from '../lib/email/send-cancellation-email'
+import { toID } from '../lib/ids'
 import { BOOKING_STATUS_OPTIONS } from '../lib/walks'
 
 const isAdmin = ({ req }: { req: { user?: { collection?: string } | null } }) =>
@@ -24,10 +26,8 @@ export const Bookings: CollectionConfig = {
       async ({ data, operation, req }) => {
         if (operation !== 'create') return data
 
-        const slotID =
-          typeof data.slot === 'object' && data.slot !== null ? data.slot.id : data.slot
-
-        if (!slotID) throw new Error('Please choose an available walk.')
+        const slotID = toID(data.slot)
+        if (slotID === null) throw new Error('Please choose an available walk.')
 
         const slot = await req.payload.findByID({
           collection: 'walk-slots',
@@ -48,8 +48,8 @@ export const Bookings: CollectionConfig = {
       sendApprovalEmail,
       sendCancellationEmail,
       async ({ doc, operation, req }) => {
-        if (operation !== 'create') return
-        const slotID = typeof doc.slot === 'object' ? doc.slot.id : doc.slot
+        const slotID = toID(doc.slot)
+        if (operation !== 'create' || slotID === null) return
         await req.payload.update({
           collection: 'walk-slots',
           id: slotID,
@@ -62,9 +62,8 @@ export const Bookings: CollectionConfig = {
     afterDelete: [
       // Reopen the walk for public booking, unless staff cancelled the walk itself.
       async ({ doc, req }) => {
-        const slotID =
-          typeof doc.slot === 'object' && doc.slot !== null ? doc.slot.id : doc.slot
-        if (!slotID) return
+        const slotID = toID(doc.slot)
+        if (slotID === null) return
 
         const { docs } = await req.payload.find({
           collection: 'walk-slots',
@@ -86,6 +85,8 @@ export const Bookings: CollectionConfig = {
       },
     ],
   },
+  // The visitor's details follow the rules in src/lib/booking-rules.ts, which the public
+  // booking form checks too.
   fields: [
     {
       name: 'slot',
@@ -98,33 +99,34 @@ export const Bookings: CollectionConfig = {
       name: 'fullName',
       type: 'text',
       required: true,
-      maxLength: 100,
+      maxLength: BOOKING_LIMITS.fullName.max,
+      validate: validateBookingField('fullName'),
     },
     {
       name: 'email',
       type: 'email',
       required: true,
+      validate: validateBookingField('email'),
     },
     {
       name: 'phone',
       type: 'text',
       required: true,
-      maxLength: 40,
+      maxLength: BOOKING_LIMITS.phone.max,
+      validate: validateBookingField('phone'),
     },
     {
       name: 'experience',
       type: 'select',
       required: true,
-      options: [
-        { label: 'First time walking a shelter dog', value: 'first-time' },
-        { label: 'Some dog walking experience', value: 'some' },
-        { label: 'Experienced dog walker', value: 'experienced' },
-      ],
+      options: EXPERIENCE_OPTIONS.map(({ label, value }) => ({ label, value })),
+      validate: validateBookingField('experience'),
     },
     {
       name: 'notes',
       type: 'textarea',
-      maxLength: 500,
+      maxLength: BOOKING_LIMITS.notes.max,
+      validate: validateBookingField('notes'),
     },
     {
       name: 'status',
