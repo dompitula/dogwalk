@@ -1,0 +1,21 @@
+name: Set up Node.js, pnpm and dependencies
+description: Node.js from .mise.toml, pnpm from package.json, dependencies from pnpm-lock.yaml
+runs:
+  using: composite
+  steps:
+    - id: versions
+      shell: bash
+      # The same line deploy.sh uses to read the Node.js version.
+      run: |
+        node="$(sed -n 's/^node *= *"\([0-9.]*\)".*/\1/p' .mise.toml | head -n 1)"
+        [ -n "$node" ] || { echo "::error::No node version in .mise.toml"; exit 1; }
+        echo "node=$node" >> "$GITHUB_OUTPUT"
+    # No version input: reads "packageManager" from package.json.
+    - uses: pnpm/action-setup@v6
+    - uses: actions/setup-node@v7
+      with:
+        node-version: ${{ steps.versions.outputs.node }}
+        cache: pnpm
+    # --frozen-lockfile: fails when pnpm-lock.yaml does not match package.json.
+    - shell: bash
+      run: pnpm install --frozen-lockfile
