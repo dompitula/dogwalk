@@ -15,6 +15,11 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "typecheck": "cross-env NODE_OPTIONS=--no-deprecation next typegen && tsc --noEmit",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload"
   },
   "dependencies": {
@@ -36,12 +41,15 @@
     "@types/node": "24.12.3",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "@vitest/coverage-v8": "^5.1.1",
     "cross-env": "^7.0.3",
     "oxfmt": "^0.73.0",
     "oxlint": "^1.94.0",
     "postcss": "^8.5.0",
     "tailwindcss": "^4.0.0",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.1"
   },
   "engines": {
     "node": ">=24.22.1",

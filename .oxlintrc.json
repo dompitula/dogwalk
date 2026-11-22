@@ -26,6 +26,9 @@
     "jsx-a11y/prefer-tag-over-role": "off",
     // The email toggle's label text sits one level deeper (label > span > strong) than the
     // default depth of 2.
-    "jsx-a11y/label-has-associated-control": ["error", { "depth": 3 }]
+    "jsx-a11y/label-has-associated-control": ["error", { "depth": 3 }],
+    // vi.fn(implementation) infers its type from the implementation; type parameters would
+    // only repeat it in every test.
+    "vitest/require-mock-type-parameters": "off"
   }
 }
